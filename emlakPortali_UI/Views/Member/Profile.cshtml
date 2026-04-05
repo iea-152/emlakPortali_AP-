@@ -1,0 +1,230 @@
+﻿@{
+    Layout = "_UserLayout";
+    ViewData["Title"] = "Profil ve Ayarlar";
+}
+
+<div class="mb-8">
+    <h2 class="text-3xl font-bold text-primary">Hesap Ayarları</h2>
+    <p class="text-gray-500 mt-1">Kişisel bilgilerinizi ve güvenliğinizi bu panelden yönetebilirsiniz.</p>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+    <section class="col-span-12 lg:col-span-8 bg-white rounded-2xl p-8 shadow-sm border border-gray-100">
+        <div class="flex items-center gap-md mb-8">
+            <div class="relative">
+                <div id="profileInitials" class="w-24 h-24 rounded-full bg-secondary/10 text-secondary flex items-center justify-center text-3xl font-bold border-4 border-white shadow-sm">
+                    ..
+                </div>
+                <button class="absolute bottom-0 right-0 bg-secondary text-white p-2 rounded-full shadow-md hover:scale-105 transition-transform">
+                    <span class="material-symbols-outlined text-[18px]">edit</span>
+                </button>
+            </div>
+            <div class="ml-4">
+                <h3 id="profileName" class="text-2xl font-bold text-primary">Yükleniyor...</h3>
+                <p class="text-gray-500 font-medium">Konutigo Üyesi • Bireysel Hesap</p>
+            </div>
+        </div>
+
+        <form id="profileForm" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="flex flex-col gap-2">
+                <label class="text-sm font-bold text-gray-700 ml-1">Adınız</label>
+                <input id="profFirstName" class="w-full rounded-xl border-gray-200 bg-gray-50 focus:border-secondary focus:ring-secondary px-4 py-3 outline-none transition-all" type="text" placeholder="Adınız" />
+            </div>
+            <div class="flex flex-col gap-2">
+                <label class="text-sm font-bold text-gray-700 ml-1">Soyadınız</label>
+                <input id="profLastName" class="w-full rounded-xl border-gray-200 bg-gray-50 focus:border-secondary focus:ring-secondary px-4 py-3 outline-none transition-all" type="text" placeholder="Soyadınız" />
+            </div>
+            <div class="md:col-span-2 flex flex-col gap-2">
+                <label class="text-sm font-bold text-gray-700 ml-1">E-posta Adresi (Değiştirilemez)</label>
+                <input id="profEmail" class="w-full rounded-xl border-gray-200 bg-gray-100 text-gray-500 px-4 py-3 outline-none cursor-not-allowed" type="email" readonly />
+            </div>
+            
+            <div class="md:col-span-2 pt-4 flex justify-end">
+                <button id="btnUpdateProfile" type="button" class="bg-secondary text-white font-bold px-10 py-3 rounded-xl hover:brightness-110 transition-all shadow-lg shadow-secondary/20">
+                    Değişiklikleri Kaydet
+                </button>
+            </div>
+        </form>
+    </section>
+
+    <section class="col-span-12 lg:col-span-4 flex flex-col gap-6">
+        <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+            <div class="flex items-center gap-2 mb-6 text-secondary">
+                <span class="material-symbols-outlined">lock_reset</span>
+                <h3 class="text-xs font-bold text-primary uppercase tracking-widest">Güvenlik Ayarları</h3>
+            </div>
+            <div class="space-y-4">
+                <input id="currentPassword" class="w-full rounded-xl border-gray-200 bg-gray-50 focus:border-secondary focus:ring-secondary px-4 py-2.5 text-sm outline-none" placeholder="Mevcut Şifre" type="password" />
+                
+                <input id="newPassword" class="w-full rounded-xl border-gray-200 bg-gray-50 focus:border-secondary focus:ring-secondary px-4 py-2.5 text-sm outline-none" placeholder="Yeni Şifre" type="password" />
+                
+                <button id="btnChangePassword" class="w-full border-2 border-primary text-primary font-bold py-2.5 rounded-xl hover:bg-primary hover:text-white transition-all text-sm">Şifreyi Güncelle</button>
+            </div>
+
+        <div class="bg-primary text-white rounded-2xl p-6 relative overflow-hidden">
+            <div class="relative z-10">
+                <h4 class="text-lg font-bold mb-1">Yardıma mı ihtiyacınız var?</h4>
+                <p class="text-blue-200 text-sm mb-4">Destek ekibimiz 7/24 yanınızda.</p>
+                <button class="bg-white text-primary font-bold px-4 py-2 rounded-lg text-xs flex items-center gap-2">
+                    <span class="material-symbols-outlined text-[18px]">support_agent</span> Müşteri Hizmetleri
+                </button>
+            </div>
+            <span class="material-symbols-outlined absolute -right-4 -bottom-4 text-[100px] opacity-10">help</span>
+        </div>
+
+            <div class="bg-red-50 rounded-2xl p-6 border border-red-100">
+                <h3 class="font-bold text-red-700 text-sm mb-1 uppercase tracking-tight">Tehlikeli Bölge</h3>
+                <p class="text-red-500 text-xs mb-4 leading-tight">Hesabınızı silerseniz verileriniz geri getirilemez.</p>
+            
+                <button id="btnDeleteAccount" type="button" class="w-full py-2 bg-white text-red-600 border border-red-200 font-bold rounded-lg hover:bg-red-600 hover:text-white transition-all text-xs">Hesabımı Kapat</button>
+            </div>
+    </section>
+</div>
+
+    @section Scripts {
+        <script>
+            $(document).ready(function () {
+                const apiBaseUrl = "https://localhost:7264/api/Auth/MyProfile";
+                const token = localStorage.getItem("token");
+            
+                if (!token) {
+                    window.location.href = "/Auth/Login";
+                    return;
+                }
+
+                // ----------------------------------------------------
+                // 1. SAYFA YÜKLENDİĞİNDE VERİLERİ GETİR
+                // ----------------------------------------------------
+                $.ajax({
+                    url: apiBaseUrl,
+                    type: "GET",
+                    headers: { "Authorization": "Bearer " + token },
+                    success: function (user) {
+                        let fName = user.firstName;
+                        let lName = user.lastName;
+                        let initials = (fName.charAt(0) + lName.charAt(0)).toUpperCase();
+
+                        $("#profileName").text(fName + " " + lName);
+                        $("#profileInitials").text(initials);
+                    
+                        $("#profFirstName").val(fName);
+                        $("#profLastName").val(lName);
+                        $("#profEmail").val(user.email);
+                    },
+                    error: function (xhr) {
+                        Swal.fire('Hata Oluştu!', xhr.responseText || 'Lütfen tekrar giriş yapın.', 'error').then(() => {
+                            localStorage.removeItem("token");
+                            window.location.href = "/Auth/Login";
+                        });
+                    }
+                });
+
+                // ----------------------------------------------------
+                // 2. BİLGİLERİ GÜNCELLE İŞLEMİ
+                // ----------------------------------------------------
+                $("#btnUpdateProfile").click(function () {
+                    let newFirstName = $("#profFirstName").val();
+                    let newLastName = $("#profLastName").val();
+
+                    if (!newFirstName || !newLastName) {
+                        Swal.fire('Uyarı', 'Ad ve Soyad alanları boş bırakılamaz!', 'warning');
+                        return;
+                    }
+                
+                    let btn = $(this);
+                    let originalText = btn.text();
+                    btn.text("Kaydediliyor...").prop("disabled", true);
+                
+                    $.ajax({
+                        url: "https://localhost:7264/api/Auth/UpdateProfile",
+                        type: "PUT",
+                        contentType: "application/json",
+                        headers: { "Authorization": "Bearer " + token },
+                        data: JSON.stringify({
+                            firstName: newFirstName,
+                            lastName: newLastName
+                        }),
+                        success: function (response) {
+                            Swal.fire('Başarılı!', 'Profil bilgileriniz başarıyla güncellendi.', 'success').then(() => {
+                                let initials = (newFirstName.charAt(0) + newLastName.charAt(0)).toUpperCase();
+                                $("#profileName").text(newFirstName + " " + newLastName);
+                                $("#profileInitials").text(initials);
+                                $("#userFullName").text(newFirstName + " " + newLastName); // Sol menüyü de günceller
+                                $("#userInitials").text(initials);
+                            });
+                        },
+                        error: function (xhr) {
+                            Swal.fire('Hata!', 'Profil güncellenirken bir sorun oluştu.', 'error');
+                        },
+                        complete: function () {
+                            btn.text(originalText).prop("disabled", false);
+                        }
+                    });
+                });
+
+                // ----------------------------------------------------
+                // 3. ŞİFRE DEĞİŞTİRME İŞLEMİ
+                // ----------------------------------------------------
+                $("#btnChangePassword").click(function () {
+                    let currentPassword = $("#currentPassword").val();
+                    let newPassword = $("#newPassword").val();
+
+                    if (!currentPassword || !newPassword) {
+                        Swal.fire('Uyarı', 'Lütfen mevcut ve yeni şifrenizi girin.', 'warning');
+                        return;
+                    }
+
+                    $.ajax({
+                        url: "https://localhost:7264/api/Auth/ChangePassword",
+                        type: "PUT",
+                        contentType: "application/json",
+                        headers: { "Authorization": "Bearer " + token },
+                        data: JSON.stringify({ currentPassword: currentPassword, newPassword: newPassword }),
+                        success: function (response) {
+                            Swal.fire('Başarılı!', response.message, 'success');
+                            $("#currentPassword").val(""); // Başarılı olunca kutuları temizle
+                            $("#newPassword").val("");
+                        },
+                        error: function (xhr) {
+                            Swal.fire('Hata!', xhr.responseText || 'Şifre güncellenemedi.', 'error');
+                        }
+                    });
+                });
+
+                // ----------------------------------------------------
+                // 4. HESABI KALICI OLARAK SİLME İŞLEMİ
+                // ----------------------------------------------------
+                $("#btnDeleteAccount").click(function () {
+                    Swal.fire({
+                        title: 'Emin misiniz?',
+                        text: "Hesabınız kalıcı olarak silinecektir. Bu işlem geri alınamaz!",
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#d33',
+                        cancelButtonColor: '#3085d6',
+                        confirmButtonText: 'Evet, Hesabımı Sil!',
+                        cancelButtonText: 'İptal'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            $.ajax({
+                                url: "https://localhost:7264/api/Auth/DeleteAccount",
+                                type: "DELETE",
+                                headers: { "Authorization": "Bearer " + token },
+                                success: function (response) {
+                                    Swal.fire('Silindi!', 'Hesabınız başarıyla silindi.', 'success').then(() => {
+                                        localStorage.removeItem("token");
+                                        window.location.href = "/Home/Index"; // Başarılıysa vitrine postala
+                                    });
+                                },
+                                error: function (xhr) {
+                                    Swal.fire('Hata!', 'Hesap silinirken bir sorun oluştu.', 'error');
+                                }
+                            });
+                        }
+                    });
+                });
+
+            });
+        </script>
+    }
+}

@@ -1,0 +1,168 @@
+﻿@{
+    ViewData["Title"] = "Anasayfa";
+}
+
+<div class="relative bg-primary text-white py-24 sm:py-32 overflow-hidden shadow-xl">
+    <div class="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80')] bg-cover bg-center opacity-20"></div>
+    
+    <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <h1 class="text-4xl sm:text-5xl font-extrabold tracking-tight mb-4">Hayalinizdeki Evi Bulun</h1>
+        <p class="text-lg sm:text-xl text-on-primary/80 mb-10 max-w-2xl mx-auto">Güvenilir, şeffaf ve EİDS onaylı yüzlerce ilan arasından size en uygun olanı hemen keşfedin.</p>
+
+        <div class="bg-white p-4 rounded-xl shadow-2xl max-w-4xl mx-auto flex flex-col md:flex-row gap-4">
+            
+            <div class="flex-1">
+                <select id="searchCity" class="w-full h-12 border-gray-300 text-gray-700 rounded-lg focus:ring-secondary focus:border-secondary px-3 font-medium">
+                    <option value="0">Şehir Seçin</option>
+                </select>
+            </div>
+
+            <div class="flex-1">
+                <select id="searchDistrict" disabled class="w-full h-12 border-gray-300 text-gray-700 rounded-lg focus:ring-secondary focus:border-secondary px-3 font-medium disabled:bg-gray-100">
+                    <option value="0">Önce Şehir Seçin</option>
+                </select>
+            </div>
+
+            <div class="flex-1">
+                <input type="number" id="searchMaxPrice" placeholder="Maksimum Fiyat (₺)" class="w-full h-12 border-gray-300 text-gray-700 rounded-lg focus:ring-secondary focus:border-secondary px-3 font-medium">
+            </div>
+
+            <button id="btnSearch" class="h-12 bg-secondary hover:bg-opacity-90 text-white px-8 rounded-lg font-bold transition-all shadow-md flex items-center justify-center">
+                <span class="material-symbols-outlined mr-2">search</span> Ara
+            </button>
+        </div>
+    </div>
+</div>
+
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+    <div class="flex justify-between items-end mb-8">
+        <div>
+            <h2 class="text-3xl font-bold text-primary">Öne Çıkan İlanlar</h2>
+            <p class="text-gray-500 mt-2">Admin tarafından onaylanmış en güncel ilanlar.</p>
+        </div>
+        <a href="#" class="text-secondary font-semibold hover:underline hidden sm:block">Tümünü Gör &rarr;</a>
+    </div>
+
+    <div id="ilanVitrinGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div class="col-span-full text-center py-12">
+            <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-secondary mb-4"></div>
+            <p class="text-gray-500 font-medium">İlanlar API'den yükleniyor...</p>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            
+            // DİKKAT: 7264 yazan yeri kendi API (Swagger) portunla değiştirmeyi unutma!
+            const apiBaseUrl = "https://localhost:7264/api";
+
+            // --- 1. SAYFA AÇILINCA ŞEHİRLERİ GETİR ---
+            $.ajax({
+                url: apiBaseUrl + "/Location/Cities",
+                type: "GET",
+                success: function (sehirler) {
+                    $.each(sehirler, function (index, sehir) {
+                        $("#searchCity").append(`<option value="${sehir.id}">${sehir.name}</option>`);
+                    });
+                }
+            });
+
+            // --- 2. ŞEHİR SEÇİLİNCE İLÇELERİ GETİR (CASCADING DROPDOWN) ---
+            $("#searchCity").change(function () {
+                let cityId = $(this).val();
+                if (cityId == "0") {
+                    $("#searchDistrict").empty().append('<option value="0">Önce Şehir Seçin</option>').prop("disabled", true);
+                    return;
+                }
+
+                $("#searchDistrict").prop("disabled", false).empty().append('<option value="0">Yükleniyor...</option>');
+                
+                $.ajax({
+                    url: apiBaseUrl + "/Location/Districts/" + cityId,
+                    type: "GET",
+                    success: function (ilceler) {
+                        $("#searchDistrict").empty().append('<option value="0">İlçe Seçin</option>');
+                        $.each(ilceler, function (index, ilce) {
+                            $("#searchDistrict").append(`<option value="${ilce.id}">${ilce.name}</option>`);
+                        });
+                    }
+                });
+            });
+
+            // --- 3. SAYFA AÇILINCA VİTRİNE "ONAYLI" İLANLARI DİZ ---
+            function ilanlariGetir(url) {
+                $("#ilanVitrinGrid").html('<div class="col-span-full text-center py-12"><div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-secondary mb-4"></div></div>');
+                
+                $.ajax({
+                    url: url,
+                    type: "GET",
+                    success: function (ilanlar) {
+                        $("#ilanVitrinGrid").empty();
+                        
+                        $.each(ilanlar, function (index, ilan) {
+                            // Fiyatı TL formatına çevirme (Örn: 4.500.000 ₺)
+                            let formatliFiyat = new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY', maximumFractionDigits: 0 }).format(ilan.price);
+                            
+                            // İlan Kartı Tasarımı (Tailwind)
+                            let kartHtml = `
+                                <div class="bg-white rounded-2xl shadow-sm hover:shadow-xl transition-shadow border border-gray-100 overflow-hidden group cursor-pointer">
+                                    <div class="relative h-60 overflow-hidden bg-gray-200">
+                                        <img src="https://images.unsplash.com/photo-1512917774080-9991f1c4c750?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Ev" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                                        
+                                        <div class="absolute top-4 left-4 bg-white/90 backdrop-blur text-primary text-xs font-bold px-3 py-1 rounded-full flex items-center shadow-sm">
+                                            <span class="material-symbols-outlined text-green-500 text-sm mr-1">verified</span> EİDS Onaylı
+                                        </div>
+                                        <div class="absolute top-4 right-4 bg-secondary text-white text-xs font-bold px-3 py-1 rounded-full shadow-sm">
+                                            ${ilan.categoryName}
+                                        </div>
+                                    </div>
+                                    <div class="p-6">
+                                        <h3 class="text-2xl font-extrabold text-primary mb-2">${formatliFiyat}</h3>
+                                        <p class="text-lg font-bold text-gray-800 mb-1 truncate" title="${ilan.title}">${ilan.title}</p>
+                                        <p class="text-gray-500 text-sm mb-4 flex items-center">
+                                            <span class="material-symbols-outlined text-gray-400 text-sm mr-1">location_on</span>
+                                            ${ilan.cityName}
+                                        </p>
+                                        <div class="flex items-center gap-4 border-t border-gray-100 pt-4">
+                                            <div class="flex items-center text-sm font-medium text-gray-600">
+                                                <span class="material-symbols-outlined text-gray-400 text-[18px] mr-1.5">king_bed</span> ${ilan.roomCount}
+                                            </div>
+                                            <div class="flex items-center text-sm font-medium text-gray-600">
+                                                <span class="material-symbols-outlined text-gray-400 text-[18px] mr-1.5">calendar_month</span> ${new Date(ilan.createdDate).toLocaleDateString('tr-TR')}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+                            $("#ilanVitrinGrid").append(kartHtml);
+                        });
+                    },
+                    error: function () {
+                        $("#ilanVitrinGrid").html('<div class="col-span-full text-center text-red-500 py-12">İlanlar bulunamadı veya API hatası.</div>');
+                    }
+                });
+            }
+
+            // Sayfa ilk açıldığında doğrudan "ApprovedList" metodunu çağır (Filtresiz)
+            ilanlariGetir(apiBaseUrl + "/Advertisement/ApprovedList");
+
+            // --- 4. ARA BUTONUNA BASILINCA (FİLTRELEME) ---
+            $("#btnSearch").click(function () {
+                let cityId = $("#searchCity").val();
+                let maxPrice = $("#searchMaxPrice").val();
+                
+                // Filtreleme URL'sini oluşturuyoruz
+                let filterUrl = apiBaseUrl + "/Advertisement/Filter?";
+                
+                if (cityId != "0") filterUrl += "CityId=" + cityId + "&";
+                if (maxPrice != "") filterUrl += "MaxPrice=" + maxPrice + "&";
+                
+                // Seçilen filtrelere göre ilanları tekrar getir
+                ilanlariGetir(filterUrl);
+            });
+
+        });
+    </script>
+}

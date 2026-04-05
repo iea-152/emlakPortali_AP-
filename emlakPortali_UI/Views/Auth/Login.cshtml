@@ -1,0 +1,70 @@
+﻿@{
+    ViewData["Title"] = "Giriş Yap";
+}
+
+<div class="min-h-[70vh] flex items-center justify-center bg-surface py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-md w-full bg-white rounded-2xl shadow-xl border border-gray-100 p-8">
+        <div class="text-center mb-8">
+            <h2 class="text-3xl font-extrabold text-primary">Tekrar Hoş Geldiniz</h2>
+            <p class="mt-2 text-sm text-gray-500">Hesabınız yok mu? <a href="/Auth/Register" class="text-secondary font-bold hover:underline">Hemen Ücretsiz Kayıt Olun</a></p>
+        </div>
+        
+        <form id="loginForm" class="space-y-6">
+            <div>
+                <label class="block text-sm font-semibold text-primary mb-1">E-posta Adresi</label>
+                <input type="email" id="Email" required class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-secondary focus:border-secondary h-11 px-3 border outline-none">
+            </div>
+
+            <div>
+                <label class="flex justify-between items-center mb-1">
+                    <span class="block text-sm font-semibold text-primary">Şifre</span>
+                    <a href="#" class="text-xs text-secondary hover:underline font-medium">Şifremi Unuttum</a>
+                </label>
+                <input type="password" id="Password" required class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-secondary focus:border-secondary h-11 px-3 border outline-none">
+            </div>
+
+            <div id="loginError" class="hidden text-sm font-bold text-center p-2 bg-red-100 text-red-600 rounded"></div>
+
+            <button type="submit" id="btnLogin" class="w-full flex justify-center py-3 px-4 rounded-lg shadow-md text-sm font-bold text-white bg-secondary hover:bg-opacity-90 transition-all">
+                Giriş Yap
+            </button>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            const apiBaseUrl = "https://localhost:7264/api/Auth/Login";
+
+            $("#loginForm").submit(function(e) {
+                e.preventDefault();
+                $("#btnLogin").text("Giriş yapılıyor...").prop("disabled", true);
+                $("#loginError").addClass("hidden");
+                
+                var loginData = {
+                    UserName: $("#Email").val(), 
+                    Password: $("#Password").val()
+                };
+
+                $.ajax({
+                    url: apiBaseUrl,
+                    type: "POST",
+                    contentType: "application/json",
+                    data: JSON.stringify(loginData),
+                    success: function(response) {
+                        // ŞOV BURADA: API'den gelen Token'ı tarayıcının kasasına koyuyoruz!
+                        localStorage.setItem("token", response.token);
+                        
+                        // Kullanıcıyı Admin/Kullanıcı Paneline yönlendir
+                        window.location.href = "/Home/Index";
+                    },
+                    error: function(xhr) {
+                        $("#btnLogin").text("Giriş Yap").prop("disabled", false);
+                        $("#loginError").text("E-posta veya şifre hatalı! Lütfen tekrar deneyin.").removeClass("hidden");
+                    }
+                });
+            });
+        });
+    </script>
+}

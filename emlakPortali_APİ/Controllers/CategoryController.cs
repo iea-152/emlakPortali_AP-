@@ -1,11 +1,8 @@
 ﻿using emlakPortali_APİ.Data;
-using emlakPortali_APİ.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using emlakPortali_APİ.Data;
-using emlakPortali_APİ.Models;
 
-namespace Uyg.API.Controllers
+namespace emlakPortali_APİ.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
@@ -19,9 +16,13 @@ namespace Uyg.API.Controllers
         }
 
         [HttpGet]
-        public async Task<List<Category>> GetCategories()
+        public async Task<IActionResult> GetCategories()
         {
-            return await _context.Categories.ToListAsync();
+            var categories = await _context.Categories
+                .Select(c => new { c.Id, c.Name })
+                .ToListAsync();
+
+            return Ok(categories);
         }
     }
 }

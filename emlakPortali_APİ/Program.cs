@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
-using Uyg.API.Repositories;
+using emlakPortali_APÝ.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -47,10 +47,19 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
-builder.Services.AddScoped<PropertyRepository>();
-builder.Services.AddScoped<LocationRepository>();
-
+builder.Services.AddScoped<AdvertisementRepository>();
 builder.Services.AddControllers();
+// CORS Ýzinlerini Tanýmlýyoruz
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll",
+        builder =>
+        {
+            builder.AllowAnyOrigin()
+                   .AllowAnyMethod()
+                   .AllowAnyHeader();
+        });
+});
 builder.Services.AddEndpointsApiExplorer();
 
 builder.Services.AddSwaggerGen(c =>
@@ -82,7 +91,40 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseCors("AllowAll");
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
+// --- ADMÝN OLUÞTURMA SÝHÝRBAZI ---
+using (var scope = app.Services.CreateScope())
+{
+    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+    var userManager = scope.ServiceProvider.GetRequiredService<UserManager<AppUser>>();
+
+    // 1. Admin rolü yoksa oluþtur
+    if (!await roleManager.RoleExistsAsync("Admin"))
+    {
+        await roleManager.CreateAsync(new IdentityRole("Admin"));
+    }
+
+    // 2. Örnek bir admin kullanýcýsý oluþtur
+    var adminEmail = "admin@konutigo.com";
+    var adminUser = await userManager.FindByEmailAsync(adminEmail);
+
+    if (adminUser == null)
+    {
+        var newAdmin = new AppUser
+        {
+            UserName = adminEmail,
+            Email = adminEmail,
+            FirstName = "Sistem",
+            LastName = "Yöneticisi",
+            ProfilePicture = "default-profile.png"
+        };
+        // Þifresini burada belirliyoruz
+        await userManager.CreateAsync(newAdmin, "Admin123!*");
+        await userManager.AddToRoleAsync(newAdmin, "Admin");
+    }
+}
+// ---------------------------------
 app.Run();

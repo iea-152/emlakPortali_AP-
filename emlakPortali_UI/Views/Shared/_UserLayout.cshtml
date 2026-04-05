@@ -1,0 +1,109 @@
+﻿<!DOCTYPE html>
+<html class="light" lang="tr">
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>@ViewData["Title"] - Konutigo Kullanıcı Paneli</title>
+    
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+    
+    <script>
+        tailwind.config = {
+        theme: {
+        extend: {
+        colors: {
+        "primary": "#0b1c30",
+        "secondary": "#fe7b29",
+        "surface": "#f7f9fb",
+        "surface-container-low": "#f2f4f6",
+        "surface-container-lowest": "#ffffff",
+        "outline-variant": "#c5c6cf",
+        "error-container": "#ffdad6",
+        "error": "#ba1a1a",
+        "primary-container": "#122647"
+        }
+        }
+        }
+        }
+    </script>
+</head>
+<body class="bg-surface font-['Inter'] text-gray-800">
+
+    <aside class="h-screen w-64 fixed left-0 top-0 flex flex-col p-6 gap-2 bg-white border-r border-gray-200 z-50">
+        <div class="mb-8 px-4 flex items-center gap-3">
+            <span class="material-symbols-outlined text-secondary text-3xl">real_estate_agent</span>
+            <div>
+                <h1 class="text-xl font-bold text-primary leading-none">Konutigo</h1>
+                <p class="text-xs text-gray-500 font-semibold mt-1">Üye Paneli</p>
+            </div>
+        </div>
+
+        <nav class="flex flex-col gap-2">
+            <a href="/Member/MyListings" class="flex items-center gap-3 text-gray-600 hover:bg-gray-50 rounded-xl px-4 py-3 transition-all font-medium">
+                <span class="material-symbols-outlined">list_alt</span> İlanlarım
+            </a>
+            <a href="/Member/AddListing" class="flex items-center gap-3 text-white bg-secondary hover:bg-opacity-90 rounded-xl px-4 py-3 transition-all font-bold shadow-md">
+                <span class="material-symbols-outlined">add_circle</span> Yeni İlan Ekle
+            </a>
+            <a href="/Member/Profile" class="flex items-center gap-3 text-primary bg-secondary/10 rounded-xl px-4 py-3 font-bold border-l-4 border-secondary mt-4">
+                <span class="material-symbols-outlined">manage_accounts</span> Profil ve Ayarlar
+            </a>
+        </nav>
+
+        <div class="mt-auto p-4 flex items-center gap-3 bg-gray-50 rounded-xl border border-gray-100">
+            <div class="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center font-bold" id="userInitials">U</div>
+            <div class="overflow-hidden">
+                <p class="text-sm font-bold text-primary truncate" id="userFullName">Kullanıcı</p>
+                <button id="btnUserLogout" class="text-[11px] text-red-500 font-bold hover:underline">Çıkış Yap</button>
+            </div>
+        </div>
+    </aside>
+
+    <main class="ml-64 min-h-screen flex flex-col">
+        <header class="h-16 flex items-center justify-between px-8 bg-white border-b border-gray-200 sticky top-0 z-40">
+            <div class="font-semibold text-gray-500">Kullanıcı Kontrol Merkezi</div>
+            <a href="/Home/Index" class="text-sm font-bold text-secondary flex items-center hover:underline">
+                Vitrine Dön <span class="material-symbols-outlined ml-1 text-[18px]">arrow_forward</span>
+            </a>
+        </header>
+
+        <div class="flex-1 p-8">
+            @RenderBody()
+        </div>
+    </main>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        $(document).ready(function() {
+        const token = localStorage.getItem("token");
+        if (!token) {
+        window.location.href = "/Auth/Login";
+        return;
+        }
+        $("#btnUserLogout").click(function () {
+        localStorage.removeItem("token");
+        window.location.href = "/Home/Index";
+        });
+        $.ajax({
+        url: "https://localhost:7264/api/Auth/MyProfile",
+        type: "GET",
+        headers: { "Authorization": "Bearer " + token },
+        success: function(user) {
+        let fName = user.firstName;
+        let lName = user.lastName;
+                    
+        $("#userFullName").text(fName + " " + lName);
+        $("#userInitials").text((fName.charAt(0) + lName.charAt(0)).toUpperCase());
+        },
+        error: function(xhr) {
+        console.error("Sol menü bilgileri çekilemedi:", xhr.responseText);
+        }
+        });
+        });
+    </script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

@@ -1,0 +1,188 @@
+﻿@{
+    Layout = "_AdminLayout";
+    ViewData["Title"] = "Onay Merkezi";
+}
+
+<div class="mb-8 flex justify-between items-end">
+    <div>
+        <h1 class="text-2xl font-extrabold text-primary">Onay Bekleyen İlanlar</h1>
+        <p class="text-gray-500 text-sm mt-1">Kullanıcıların vitrine çıkması için sizin onayınızı beklediği ilanlar.</p>
+    </div>
+    <div class="hidden sm:block">
+        <span class="bg-red-50 text-red-600 border border-red-200 px-4 py-2 rounded-lg text-sm font-bold shadow-sm flex items-center">
+            <span class="material-symbols-outlined text-[18px] mr-2">warning</span> Dikkatli İnceleyin
+        </span>
+    </div>
+</div>
+
+<div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+    <div class="p-5 border-b border-gray-100 flex flex-wrap gap-4 items-center justify-between bg-gray-50/50">
+        <div class="relative">
+            <span class="material-symbols-outlined absolute left-3 top-2.5 text-gray-400 text-sm">search</span>
+            <input type="text" id="tableSearch" placeholder="İlan başlığı ara..." class="pl-9 pr-4 py-2 border-gray-200 rounded-xl text-sm focus:ring-secondary focus:border-secondary w-64">
+        </div>
+        <button class="text-gray-500 hover:text-primary transition-colors flex items-center text-sm font-semibold">
+            <span class="material-symbols-outlined mr-1">filter_list</span> Filtrele
+        </button>
+    </div>
+
+    <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse">
+            <thead>
+                <tr class="bg-white border-b border-gray-100">
+                    <th class="px-6 py-4 text-xs font-extrabold text-gray-400 uppercase tracking-wider">İlan Bilgisi</th>
+                    <th class="px-6 py-4 text-xs font-extrabold text-gray-400 uppercase tracking-wider">Kategori / Konum</th>
+                    <th class="px-6 py-4 text-xs font-extrabold text-gray-400 uppercase tracking-wider">Fiyat</th>
+                    <th class="px-6 py-4 text-xs font-extrabold text-gray-400 uppercase tracking-wider">Tarih</th>
+                    <th class="px-6 py-4 text-xs font-extrabold text-gray-400 uppercase tracking-wider text-right">Aksiyonlar</th>
+                </tr>
+            </thead>
+            <tbody id="pendingTableBody" class="divide-y divide-gray-50">
+                <tr>
+                    <td colspan="5" class="px-6 py-12 text-center text-gray-400">
+                        <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-secondary mb-4"></div>
+                        <p>İlanlar yükleniyor...</p>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            const apiBaseUrl = "https://localhost:7264/api/Advertisement";
+            const token = localStorage.getItem("token");
+
+            // 1. Bekleyen İlanları Yükle
+            function loadPendingListings() {
+                $.ajax({
+                    url: apiBaseUrl + "/Pending",
+                    type: "GET",
+                    headers: { "Authorization": "Bearer " + token },
+                    success: function (data) {
+                        const tbody = $("#pendingTableBody");
+                        tbody.empty();
+
+                        if (data.length === 0) {
+                            tbody.append(`
+                                <tr>
+                                    <td colspan="5" class="px-6 py-12 text-center text-gray-400">
+                                        <span class="material-symbols-outlined text-4xl mb-2 text-gray-300">task</span>
+                                        <p class="font-medium text-lg text-gray-500">Harika! Onay bekleyen ilan yok.</p>
+                                    </td>
+                                </tr>
+                            `);
+                            return;
+                        }
+
+                        $.each(data, function (index, item) {
+                            let priceFormat = new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY', maximumFractionDigits: 0 }).format(item.price);
+                            let dateObj = new Date(item.createdDate);
+                            let dateFormat = dateObj.toLocaleDateString('tr-TR');
+
+                            let row = `
+                                <tr class="hover:bg-gray-50/80 transition-colors group">
+                                    <td class="px-6 py-4">
+                                        <div class="flex items-center">
+                                            <div class="h-12 w-12 flex-shrink-0 rounded-lg bg-gray-200 bg-cover bg-center" style="background-image: url('https://images.unsplash.com/photo-1560518883-ce09059eeffa?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80')"></div>
+                                            <div class="ml-4">
+                                                <div class="text-sm font-bold text-primary">${item.title}</div>
+                                                <div class="text-xs text-orange-500 font-semibold bg-orange-50 inline-block px-2 py-0.5 rounded mt-1">İnceleme Bekliyor</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <div class="text-sm text-gray-900 font-medium">${item.categoryName}</div>
+                                        <div class="text-xs text-gray-500 flex items-center mt-1"><span class="material-symbols-outlined text-[14px] mr-1">location_on</span>${item.cityName}</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm font-extrabold text-primary">${priceFormat}</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm text-gray-500">${dateFormat}</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-right font-medium">
+                                        <div class="flex items-center justify-end gap-2 opacity-80 group-hover:opacity-100 transition-opacity">
+                                            <button onclick="approveListing(${item.id})" class="bg-green-500 hover:bg-green-600 text-white p-2 rounded-lg shadow-sm transition-all" title="Onayla ve Vitrine Çıkar">
+                                                <span class="material-symbols-outlined text-sm">check</span>
+                                            </button>
+                                            <button onclick="rejectListing(${item.id})" class="bg-red-500 hover:bg-red-600 text-white p-2 rounded-lg shadow-sm transition-all" title="İlanı Reddet (Sil)">
+                                                <span class="material-symbols-outlined text-sm">delete</span>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            `;
+                            tbody.append(row);
+                        });
+                    },
+                    error: function(xhr) {
+                        if(xhr.status === 401) {
+                            alert("Oturumunuz süresi dolmuş. Lütfen tekrar giriş yapın.");
+                            window.location.href = "/Auth/Login";
+                        }
+                    }
+                });
+            }
+
+            // Sayfa açıldığında verileri yükle
+            loadPendingListings();
+        });
+
+        // 2. Onaylama Fonksiyonu (Global)
+        window.approveListing = function(id) {
+            Swal.fire({
+                title: 'Onaylıyor Musunuz?',
+                text: "Bu ilan tüm kullanıcılara açık vitrine eklenecektir.",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#22c55e', // Yeşil
+                cancelButtonColor: '#0b1c30',
+                confirmButtonText: 'Evet, Onayla',
+                cancelButtonText: 'İptal',
+                borderRadius: '15px'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        url: "https://localhost:7264/api/Advertisement/Approve/" + id,
+                        type: "PUT",
+                        headers: { "Authorization": "Bearer " + localStorage.getItem("token") },
+                        success: function () {
+                            Swal.fire({ title: 'Onaylandı!', text: 'İlan başarıyla vitrine çıkarıldı.', icon: 'success', timer: 1500, showConfirmButton: false });
+                            setTimeout(() => { location.reload(); }, 1500); // Listeyi güncellemek için sayfayı yenile
+                        }
+                    });
+                }
+            });
+        };
+
+        // 3. Reddetme (Silme) Fonksiyonu (Global)
+        window.rejectListing = function(id) {
+            Swal.fire({
+                title: 'Reddet ve Sil?',
+                text: "Bu ilanı reddederek sistemden kalıcı olarak silmek istiyor musunuz?",
+                icon: 'error',
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444', // Kırmızı
+                cancelButtonColor: '#0b1c30',
+                confirmButtonText: 'Evet, Sil',
+                cancelButtonText: 'İptal',
+                borderRadius: '15px'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        url: "https://localhost:7264/api/Advertisement?id=" + id, // Hocanın yazdıgı DELETE metodu url yapısı
+                        type: "DELETE",
+                        headers: { "Authorization": "Bearer " + localStorage.getItem("token") },
+                        success: function () {
+                            Swal.fire({ title: 'Silindi!', text: 'İlan reddedildi ve sistemden silindi.', icon: 'success', timer: 1500, showConfirmButton: false });
+                            setTimeout(() => { location.reload(); }, 1500);
+                        }
+                    });
+                }
+            });
+        };
+    </script>
+}

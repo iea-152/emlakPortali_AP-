@@ -1,0 +1,220 @@
+﻿<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Konutigo Yönetim Paneli</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script>
+        tailwind.config = {
+        theme: {
+        extend: {
+        colors: {
+        "primary": "#0b1c30", // Koyu Lacivert
+        "secondary": "#fe7b29", // Canlı Turuncu
+        "surface": "#f8fafc"
+        }
+        }
+        }
+        }
+    </script>
+</head>
+<body class="bg-surface font-['Inter'] flex h-screen overflow-hidden text-primary">
+
+    <aside class="w-72 bg-white border-r border-gray-200 flex flex-col flex-shrink-0 shadow-sm z-20">
+        <div class="p-8 flex items-center gap-3">
+            <img src="~/images/konutigo_logo_design.png" alt="Konutigo" class="h-9 w-auto">
+            <div class="flex flex-col">
+                <span class="font-extrabold text-lg tracking-tight leading-none">Konutigo</span>
+                <span class="text-[10px] text-secondary font-bold tracking-[0.2em] uppercase mt-1">Admin Portal</span>
+            </div>
+        </div>
+
+        <nav class="flex-1 px-4 space-y-1 overflow-y-auto" id="admin-nav">
+            <div class="text-[11px] font-bold text-gray-400 uppercase tracking-widest px-4 mb-2 mt-4">Yönetim</div>
+            
+            <a href="/Admin/Dashboard" class="sidebar-link flex items-center gap-3 px-4 py-3.5 text-gray-600 hover:bg-gray-50 rounded-xl transition-all group">
+                <span class="material-symbols-outlined group-hover:text-secondary">dashboard</span> Dashboard
+            </a>
+            
+            <a href="/Admin/Approvals" class="sidebar-link flex items-center gap-3 px-4 py-3.5 text-gray-600 hover:bg-gray-50 rounded-xl transition-all group">
+                <span class="material-symbols-outlined group-hover:text-secondary">verified_user</span>
+                <span>Onay Merkezi</span>
+                <span id="pendingBadge" class="ml-auto bg-secondary text-white text-[10px] px-2 py-0.5 rounded-full hidden">0</span>
+            </a>
+
+            <div class="text-[11px] font-bold text-gray-400 uppercase tracking-widest px-4 mb-2 mt-6">Sistem</div>
+
+            <a href="/Admin/Users" class="sidebar-link flex items-center gap-3 px-4 py-3.5 text-gray-600 hover:bg-gray-50 rounded-xl transition-all group">
+                <span class="material-symbols-outlined group-hover:text-secondary">group</span> Kullanıcılar
+            </a>
+        </nav>
+
+        <div class="p-4 border-t border-gray-100 bg-gray-50/50">
+            <div class="flex items-center gap-3 p-3 bg-white rounded-xl shadow-sm mb-3 border border-gray-100">
+                <div class="w-10 h-10 rounded-lg bg-primary text-white flex items-center justify-center font-bold">A</div>
+                <div class="overflow-hidden">
+                    <p class="text-xs font-bold text-primary truncate" id="adminDisplayName">Yönetici</p>
+                    <p class="text-[10px] text-green-600 font-semibold flex items-center">
+                        <span class="w-1.5 h-1.5 bg-green-500 rounded-full mr-1.5 animate-pulse"></span> Çevrimiçi
+                    </p>
+                </div>
+            </div>
+            <button id="btnAdminLogout" class="w-full flex items-center justify-center gap-2 py-3 text-red-500 hover:bg-red-50 rounded-xl text-sm font-bold transition-all border border-transparent">
+                <span class="material-symbols-outlined text-lg">logout</span> Oturumu Kapat
+            </button>
+        </div>
+    </aside>
+
+    <div class="flex-1 flex flex-col overflow-hidden">
+        
+        <header class="h-20 bg-white border-b border-gray-200 flex items-center justify-between px-10 z-10">
+            <div class="flex items-center gap-4">
+                <h2 class="text-xl font-extrabold text-primary">@ViewData["Title"]</h2>
+            </div>
+            
+            <div class="flex items-center gap-6">
+                <div class="flex items-center gap-2">
+                    <button class="relative p-2.5 text-gray-500 hover:bg-gray-50 rounded-xl">
+                        <span class="material-symbols-outlined">notifications</span>
+                        <span class="absolute top-2.5 right-2.5 w-2 h-2 bg-secondary rounded-full border-2 border-white"></span>
+                    </button>
+                    <a href="/Home/Index" title="Siteye Git" class="p-2.5 text-gray-500 hover:bg-gray-50 rounded-xl">
+                        <span class="material-symbols-outlined">open_in_new</span>
+                    </a>
+                </div>
+            </div>
+        </header>
+
+        <main class="flex-1 overflow-y-auto p-10">
+            @RenderBody()
+        </main>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        // JWT Token içini okuma fonksiyonu
+        function parseJwt(token) {
+        try {
+        const base64Url = token.split('.')[1];
+        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+        return JSON.parse(window.atob(base64));
+        } catch (e) { return null; }
+        }
+
+        $(document).ready(function () {
+        const token = localStorage.getItem("token");
+            
+        // 1. GÜVENLİK KONTROLÜ
+        if (!token) {
+        window.location.href = "/Auth/Login";
+        return;
+        }
+
+        const payload = parseJwt(token);
+        const role = payload["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"];
+            
+        // Eğer Admin değilse dışarı at
+        if (role !== "Admin") {
+        window.location.href = "/Home/Index";
+        return;
+        }
+
+        // 2. DİNAMİK SİDEBAR AKTİF DURUMU
+        var currentPath = window.location.pathname;
+        $(".sidebar-link").each(function () {
+        var linkPath = $(this).attr("href");
+        if (currentPath === linkPath) {
+        $(this).addClass("bg-secondary/10 text-primary font-bold border-l-4 border-secondary");
+        $(this).removeClass("text-gray-600");
+        }
+        });
+
+        // 3. ONAM BEKLEYEN ROZETİ GÜNCELLEME (GLOBAL)
+        // Bu kısım Dashboard verisinden veya direkt API'den sayı alabilir
+        $.ajax({
+        url: "https://localhost:7264/api/Advertisement/Pending",
+        type: "GET",
+        headers: { "Authorization": "Bearer " + token },
+        success: function(data) {
+        if(data.length > 0) {
+        $("#pendingBadge").text(data.length).removeClass("hidden");
+        }
+        }
+        });
+
+        // 4. ÇIKIŞ YAP
+        $("#btnAdminLogout").click(function () {
+        Swal.fire({
+        title: 'Çıkış Yapıyorsunuz',
+        text: "Yönetim panelinden ayrılmak istediğinize emin misiniz?",
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#fe7b29',
+        cancelButtonColor: '#0b1c30',
+        confirmButtonText: 'Evet, Çıkış Yap',
+        cancelButtonText: 'İptal'
+        }).then((result) => {
+        if (result.isConfirmed) {
+        localStorage.removeItem("token");
+        window.location.href = "/Home/Index";
+        }
+        });
+        });
+        });
+        $.getScript("https://cdn.jsdelivr.net/npm/chart.js", function() {
+        const ctx = document.getElementById('trendsChart').getContext('2d');
+    
+        // Şık bir gradyan oluşturuyoruz (Turuncudan şeffafa)
+        const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+        gradient.addColorStop(0, 'rgba(254, 123, 41, 0.4)');
+        gradient.addColorStop(1, 'rgba(254, 123, 41, 0.0)');
+
+        new Chart(ctx, {
+        type: 'line',
+        data: {
+        labels: ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran'],
+        datasets: [{
+        label: 'Yeni İlanlar',
+        data: [65, 80, 72, 95, 110, 135],
+        borderColor: '#fe7b29', 
+        backgroundColor: gradient,
+        borderWidth: 3,
+        fill: true,
+        tension: 0.4,
+        pointRadius: 4,
+        pointBackgroundColor: '#fff',
+        pointBorderColor: '#fe7b29',
+        pointBorderWidth: 2
+        }]
+        },
+        options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+        legend: { display: false } 
+        },
+        scales: {
+        y: {
+        beginAtZero: true,
+        grid: { display: false },
+        ticks: { color: '#94a3b8', font: { size: 10 } }
+        },
+        x: {
+        grid: { display: false },
+        ticks: { color: '#94a3b8', font: { size: 10 } }
+        }
+        }
+        }
+        });
+        });
+    </script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

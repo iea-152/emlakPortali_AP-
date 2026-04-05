@@ -1,0 +1,185 @@
+﻿<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Konutigo Emlak Portalı</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    
+    <script>
+        tailwind.config = {
+        darkMode: "class",
+        theme: {
+        extend: {
+        colors: {
+        "primary": "#0b1c30", // Koyu Lacivert
+        "secondary": "#fe7b29", // Canlı Turuncu
+        "surface": "#f8fafc",
+        "surface-variant": "#e0e3e5",
+        "on-primary": "#ffffff"
+        },
+        fontFamily: {
+        sans: ['Inter', 'sans-serif'],
+        }
+        }
+        }
+        }
+    </script>
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-surface flex flex-col min-h-screen text-primary">
+
+    <header class="bg-white shadow-sm sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-20">
+                <div class="flex-shrink-0 flex items-center">
+                    <a href="/Home/Index">
+                        <img class="h-10 w-auto" src="~/images/konutigo_logo_design.png" alt="Konutigo Logo">
+                    </a>
+                </div>
+                
+                <nav class="hidden md:flex space-x-8">
+                    <a href="/Home/Index" class="text-primary hover:text-secondary px-3 py-2 text-sm font-semibold transition-colors">Anasayfa</a>
+                    <a href="#" class="text-primary hover:text-secondary px-3 py-2 text-sm font-semibold transition-colors">Satılık</a>
+                    <a href="#" class="text-primary hover:text-secondary px-3 py-2 text-sm font-semibold transition-colors">Kiralık</a>
+                    <a href="#" class="text-primary hover:text-secondary px-3 py-2 text-sm font-semibold transition-colors">Projeler</a>
+                </nav>
+
+                <div id="auth-buttons" class="hidden md:flex items-center space-x-4">
+                    <a href="/Auth/Login" class="text-primary hover:text-secondary font-semibold text-sm transition-colors">Giriş Yap</a>
+                    <a href="/Auth/Register" class="bg-secondary text-white px-5 py-2 rounded-lg font-semibold text-sm hover:bg-opacity-90 transition-all shadow-md">Ücretsiz İlan Ver</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-grow">
+        @RenderBody()
+    </main>
+
+    <footer class="bg-primary text-white pt-16 pb-8 mt-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
+                <div>
+                    <img class="h-10 w-auto mb-4 bg-white p-1 rounded" src="~/images/konutigo_logo_design.png" alt="Konutigo Logo">
+                    <p class="text-on-primary/80 text-sm">Emlak arayışınızda şeffaflık, hız ve profesyonel uzmanlığı bir araya getiriyoruz.</p>
+                </div>
+                <div>
+                    <h5 class="font-bold uppercase mb-4 tracking-wider text-secondary">Kurumsal</h5>
+                    <ul class="space-y-2 text-sm text-on-primary/80">
+                        <li><a class="hover:text-secondary transition-all" href="#">Hakkımızda</a></li>
+                        <li><a class="hover:text-secondary transition-all" href="#">Hizmet Şartları</a></li>
+                        <li><a class="hover:text-secondary transition-all" href="#">Gizlilik Politikası</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h5 class="font-bold uppercase mb-4 tracking-wider text-secondary">Destek</h5>
+                    <ul class="space-y-2 text-sm text-on-primary/80">
+                        <li><a class="hover:text-secondary transition-all" href="#">İletişim</a></li>
+                        <li><a class="hover:text-secondary transition-all" href="#">Kariyer</a></li>
+                        <li><a class="hover:text-secondary transition-all" href="#">Site Haritası</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h5 class="font-bold uppercase mb-4 tracking-wider text-secondary">Haber Bülteni</h5>
+                    <p class="text-sm text-on-primary/80 mb-4">Yeni ilanlardan haberdar olmak için abone olun.</p>
+                    <div class="flex bg-white/10 rounded-lg p-1">
+                        <input class="bg-transparent border-none text-white focus:ring-0 text-sm w-full outline-none px-2" placeholder="E-posta adresiniz" type="email" />
+                        <button class="bg-secondary text-white px-4 py-2 rounded-lg font-bold text-sm">Katıl</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="border-t border-white/20 pt-8 flex flex-col md:flex-row justify-between items-center text-sm text-on-primary/60">
+                <p>&copy; 2026 Konutigo Emlak Portalı. Tüm hakları saklıdır.</p>
+                <div class="flex space-x-4 mt-4 md:mt-0">
+                    <a href="#" class="hover:text-white"><span class="material-symbols-outlined">language</span> Türkçe</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        // Biletin (Token) İçini Okuma Fonksiyonu
+        function parseJwt(token) {
+        try {
+        var base64Url = token.split('.')[1];
+        var base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+        return JSON.parse(decodeURIComponent(window.atob(base64).split('').map(function(c) {
+        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+        }).join('')));
+        } catch (e) { return null; }
+        }
+
+        $(document).ready(function () {
+        // Tarayıcının kasasında token var mı diye bakıyoruz
+        var token = localStorage.getItem("token");
+
+        if (token) {
+        var userPayload = parseJwt(token);
+        var role = userPayload ? userPayload["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"] : "";
+
+        // Kilit Nokta: Rol "Admin" ise Admin Paneline, değilse Üye Paneline gidecek!
+        var panelUrl = (role === "Admin") ? "/Admin/Dashboard" : "/Member/Profile";
+
+        // Menüyü oluştur
+        var loggedInMenu = `
+        <a href="${panelUrl}" class="text-primary hover:text-secondary font-semibold text-sm transition-colors flex items-center">
+        <span class="material-symbols-outlined text-[20px] mr-1">person</span> Panelim
+        </a>
+        <button id="btnLogout" class="text-red-500 hover:text-red-700 font-semibold text-sm transition-colors flex items-center">
+        <span class="material-symbols-outlined text-[20px] mr-1">logout</span> Çıkış Yap
+        </button>
+        `;
+                
+        // auth-buttons divinin içini bu yeni butonlarla doldur
+        $("#auth-buttons").html(loggedInMenu);
+
+        // Çıkış Yap butonuna tıklanma olayı (SweetAlert2 ile)
+        $("#btnLogout").click(function (e) {
+        e.preventDefault();
+                    
+        Swal.fire({
+        title: 'Çıkış Yapıyorsunuz',
+        text: "Hesabınızdan güvenli bir şekilde çıkış yapmak istediğinize emin misiniz?",
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#fe7b29',
+        cancelButtonColor: '#0b1c30',
+        confirmButtonText: 'Evet, Çıkış Yap',
+        cancelButtonText: 'İptal',
+        background: '#ffffff',
+        color: '#0b1c30',
+        borderRadius: '1rem'
+        }).then((result) => {
+        if (result.isConfirmed) {
+        localStorage.removeItem("token");
+                            
+        Swal.fire({
+        title: 'Çıkış Yapıldı!',
+        text: 'Ana sayfaya yönlendiriliyorsunuz...',
+        icon: 'success',
+        showConfirmButton: false,
+        timer: 1500
+        }).then(() => {
+        window.location.href = "/Home/Index";
+        });
+        }
+        });
+        });
+        }
+        });
+    </script>
+
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

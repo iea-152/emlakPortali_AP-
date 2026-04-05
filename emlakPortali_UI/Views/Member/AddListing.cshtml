@@ -1,0 +1,296 @@
+﻿@{
+    Layout = "_UserLayout";
+    ViewData["Title"] = "Yeni İlan Ekle";
+}
+
+<div class="mb-8 flex items-center justify-between">
+    <div>
+        <h2 class="text-3xl font-bold text-primary">Yeni İlan Ekle</h2>
+        <p class="text-gray-500 mt-1">Gayrimenkulünüzü sisteme ekleyin, 2 kolay adımda vitrine çıkarın.</p>
+    </div>
+</div>
+
+<div class="mb-8 flex items-center justify-center">
+    <div class="flex items-center gap-4">
+        <div id="indicatorStep1" class="flex items-center justify-center w-10 h-10 rounded-full bg-secondary text-white font-bold shadow-lg transition-all">1</div>
+        <span class="font-bold text-secondary" id="textStep1">İlan Bilgileri</span>
+        
+        <div class="w-16 h-1 bg-gray-200 rounded-full mx-2" id="stepLine"></div>
+        
+        <div id="indicatorStep2" class="flex items-center justify-center w-10 h-10 rounded-full bg-gray-200 text-gray-500 font-bold transition-all">2</div>
+        <span class="font-bold text-gray-400" id="textStep2">Fotoğraflar</span>
+    </div>
+</div>
+
+<div class="bg-white rounded-2xl p-8 shadow-sm border border-gray-100">
+    <form id="addListingForm">
+        
+        <div id="step1Container" class="grid grid-cols-1 md:grid-cols-12 gap-6 transition-all duration-500">
+            
+            <div class="md:col-span-12 flex flex-col gap-2">
+                <label class="text-sm font-bold text-gray-700 ml-1">İlan Başlığı <span class="text-red-500">*</span></label>
+                <input id="adTitle" class="w-full rounded-xl border-gray-200 bg-gray-50 focus:border-secondary px-4 py-3 outline-none" type="text" placeholder="Örn: Kadıköy Merkezde 3+1" required />
+            </div>
+
+            <div class="md:col-span-4 flex flex-col gap-2">
+                <label class="text-sm font-bold text-gray-700 ml-1">Fiyat (₺) <span class="text-red-500">*</span></label>
+                <input id="adPrice" class="w-full rounded-xl border-gray-200 bg-gray-50 focus:border-secondary px-4 py-3 outline-none" type="number" min="0" required />
+            </div>
+            <div class="md:col-span-4 flex flex-col gap-2">
+                <label class="text-sm font-bold text-gray-700 ml-1">Brüt Metrekare <span class="text-red-500">*</span></label>
+                <input id="adSquareMeter" class="w-full rounded-xl border-gray-200 bg-gray-50 focus:border-secondary px-4 py-3 outline-none" type="number" min="1" required />
+            </div>
+            <div class="md:col-span-4 flex flex-col gap-2">
+                <label class="text-sm font-bold text-gray-700 ml-1">Oda Sayısı <span class="text-red-500">*</span></label>
+                <input id="adRoomCount" class="w-full rounded-xl border-gray-200 bg-gray-50 focus:border-secondary px-4 py-3 outline-none" type="text" placeholder="Örn: 3+1" required />
+            </div>
+
+            <div class="md:col-span-4 flex flex-col gap-2">
+                <label class="text-sm font-bold text-gray-700 ml-1">Bina Yaşı <span class="text-red-500">*</span></label>
+                <input id="adBuildingAge" class="w-full rounded-xl border-gray-200 bg-gray-50 px-4 py-3 outline-none" type="number" min="0" required />
+            </div>
+            <div class="md:col-span-4 flex flex-col gap-2">
+                <label class="text-sm font-bold text-gray-700 ml-1">Bulunduğu Kat <span class="text-red-500">*</span></label>
+                <input id="adFloorNumber" class="w-full rounded-xl border-gray-200 bg-gray-50 px-4 py-3 outline-none" type="number" required />
+            </div>
+            <div class="md:col-span-4 flex flex-col gap-2">
+                <label class="text-sm font-bold text-gray-700 ml-1">Isıtma Tipi <span class="text-red-500">*</span></label>
+                <input id="adHeatingType" class="w-full rounded-xl border-gray-200 bg-gray-50 px-4 py-3 outline-none" type="text" placeholder="Örn: Doğalgaz Kombi" required />
+            </div>
+
+            <div class="md:col-span-6 flex flex-col gap-2">
+                <label class="text-sm font-bold text-gray-700 ml-1">Taşınmaz No <span class="text-red-500">*</span></label>
+                <input id="adTasinmazNo" class="w-full rounded-xl border-gray-200 bg-gray-50 px-4 py-3 outline-none" type="text" required />
+            </div>
+            <div class="md:col-span-6 flex items-center gap-2 mt-8 ml-2">
+                <input id="adIsFurnished" type="checkbox" class="w-5 h-5 text-secondary border-gray-300 rounded focus:ring-secondary cursor-pointer">
+                <label class="text-sm font-bold text-gray-700 cursor-pointer">Eşyalı Mı?</label>
+            </div>
+            <div class="md:col-span-3 flex flex-col gap-2">
+                <label class="text-sm font-bold text-gray-700 ml-1">Kategori <span class="text-red-500">*</span></label>
+                <select id="adCategoryId" class="w-full rounded-xl border-gray-200 bg-gray-50 px-4 py-3 outline-none cursor-pointer" required>
+                    <option value="">Kategori Seçin</option>
+                </select>
+            </div>
+            <div class="md:col-span-3 flex flex-col gap-2">
+                <label class="text-sm font-bold text-gray-700 ml-1">İl <span class="text-red-500">*</span></label>
+                <select id="adCityId" class="w-full rounded-xl border-gray-200 bg-gray-50 px-4 py-3 outline-none cursor-pointer" required>
+                    <option value="">İl Seçin</option>
+                </select>
+            </div>
+            <div class="md:col-span-3 flex flex-col gap-2">
+                <label class="text-sm font-bold text-gray-700 ml-1">İlçe <span class="text-red-500">*</span></label>
+                <select id="adDistrictId" class="w-full rounded-xl border-gray-200 bg-gray-50 px-4 py-3 outline-none cursor-pointer" required disabled>
+                    <option value="">Önce İl Seçin</option>
+                </select>
+            </div>
+            <div class="md:col-span-3 flex flex-col gap-2">
+                <label class="text-sm font-bold text-gray-700 ml-1">Mahalle <span class="text-red-500">*</span></label>
+                <select id="adNeighborhoodId" class="w-full rounded-xl border-gray-200 bg-gray-50 px-4 py-3 outline-none cursor-pointer" required disabled>
+                    <option value="">Önce İlçe Seçin</option>
+                </select>
+            </div>
+
+            <div class="md:col-span-12 flex flex-col gap-2 mt-2">
+                <label class="text-sm font-bold text-gray-700 ml-1">İlan Açıklaması <span class="text-red-500">*</span></label>
+                <textarea id="adDescription" rows="4" class="w-full rounded-xl border-gray-200 bg-gray-50 px-4 py-3 resize-none outline-none" required></textarea>
+            </div>
+
+            <div class="md:col-span-12 pt-4 border-t border-gray-100 mt-2 flex justify-end">
+                <button type="button" id="btnGoToStep2" class="bg-secondary text-white font-bold px-10 py-3.5 rounded-xl hover:brightness-110 transition-all flex items-center gap-2 shadow-lg shadow-secondary/20">
+                    İleri: Fotoğraf Ekle <span class="material-symbols-outlined text-[20px]">arrow_forward</span>
+                </button>
+            </div>
+        </div>
+
+        <div id="step2Container" class="hidden grid-cols-1 gap-6 transition-all duration-500">
+            
+            <div class="bg-blue-50 border border-blue-100 p-4 rounded-xl flex items-start gap-3">
+                <span class="material-symbols-outlined text-blue-500">info</span>
+                <p class="text-sm text-blue-800 font-medium mt-0.5">İlan bilgileriniz hazır! Şimdi ilanınızı öne çıkaracak harika fotoğraflar ekleyin. En az 1 fotoğraf yüklemeniz önerilir.</p>
+            </div>
+
+            <div class="flex flex-col gap-2">
+                <label class="text-sm font-bold text-gray-700 ml-1">Fotoğrafları Seçin</label>
+                <input type="file" id="adImages" multiple accept="image/png, image/jpeg, image/webp" class="block w-full text-sm text-gray-500 file:mr-4 file:py-3 file:px-6 file:rounded-xl file:border-0 file:text-sm file:font-bold file:bg-secondary/10 file:text-secondary hover:file:bg-secondary/20 cursor-pointer border border-gray-200 rounded-xl bg-gray-50" />
+            </div>
+            
+            <div id="selectedFilesContainer" class="hidden p-4 bg-gray-50 rounded-xl border border-gray-200 text-sm text-gray-600">
+                <p class="font-bold mb-2">Seçilen Dosyalar:</p>
+                <ul id="fileList" class="list-disc pl-5"></ul>
+            </div>
+
+            <div class="pt-6 border-t border-gray-100 mt-4 flex justify-between items-center">
+                <button type="button" id="btnGoToStep1" class="text-gray-500 font-bold px-6 py-3 rounded-xl hover:bg-gray-100 transition-all flex items-center gap-2">
+                    <span class="material-symbols-outlined text-[20px]">arrow_back</span> Geri Dön
+                </button>
+                <button type="submit" id="btnSubmitListing" class="bg-primary text-white font-bold px-10 py-3.5 rounded-xl hover:bg-[#081524] transition-all flex items-center gap-2 shadow-lg shadow-primary/20">
+                    <span class="material-symbols-outlined text-[20px]">publish</span> İlanı Tamamla ve Gönder
+                </button>
+            </div>
+        </div>
+
+    </form>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            const apiBaseUrl = "https://localhost:7264/api/Advertisement";
+            const token = localStorage.getItem("token");
+            // --- DİNAMİK AÇILIR MENÜ KODLARI BAŞLANGICI ---
+            const lookupsApiUrl = "https://localhost:7264/api/Lookups";
+
+            // 1. Sayfa yüklenince Kategorileri ve İlleri getir
+            $.get(`${lookupsApiUrl}/Categories`, function (data) {
+                data.forEach(item => {
+                    $("#adCategoryId").append(`<option value="${item.id}">${item.name}</option>`);
+                });
+            });
+
+            $.get(`${lookupsApiUrl}/Cities`, function (data) {
+                data.forEach(item => {
+                    $("#adCityId").append(`<option value="${item.id}">${item.name}</option>`);
+                });
+            });
+
+            // 2. İl seçilince İlçeleri getir
+            $("#adCityId").change(function () {
+                let cityId = $(this).val();
+                
+                // İlçe ve Mahalleyi sıfırla
+                $("#adDistrictId").empty().append('<option value="">İlçe Seçin</option>').prop("disabled", true);
+                $("#adNeighborhoodId").empty().append('<option value="">Önce İlçe Seçin</option>').prop("disabled", true);
+
+                if (cityId) {
+                    $.get(`${lookupsApiUrl}/Districts/${cityId}`, function (data) {
+                        data.forEach(item => {
+                            $("#adDistrictId").append(`<option value="${item.id}">${item.name}</option>`);
+                        });
+                        $("#adDistrictId").prop("disabled", false); // Kutuyu aktif et
+                    });
+                }
+            });
+
+            // 3. İlçe seçilince Mahalleleri getir
+            $("#adDistrictId").change(function () {
+                let districtId = $(this).val();
+                
+                // Mahalleyi sıfırla
+                $("#adNeighborhoodId").empty().append('<option value="">Mahalle Seçin</option>').prop("disabled", true);
+
+                if (districtId) {
+                    $.get(`${lookupsApiUrl}/Neighborhoods/${districtId}`, function (data) {
+                        data.forEach(item => {
+                            $("#adNeighborhoodId").append(`<option value="${item.id}">${item.name}</option>`);
+                        });
+                        $("#adNeighborhoodId").prop("disabled", false); // Kutuyu aktif et
+                    });
+                }
+            });
+            // --- DİNAMİK AÇILIR MENÜ KODLARI BİTİŞİ ---
+
+            if (!token) {
+                window.location.href = "/Auth/Login";
+                return;
+            }
+
+            // === ADIM 1'DEN ADIM 2'YE GEÇİŞ KONTROLÜ ===
+            $("#btnGoToStep2").click(function () {
+                let form = document.getElementById("addListingForm");
+                
+                // HTML5 required alanları doldurulmuş mu kontrol et
+                if (!form.checkValidity()) {
+                    form.reportValidity(); // Doldurulmamışsa kırmızı uyarı ver
+                    return;
+                }
+
+                // Doldurulmuşsa Adım 1'i gizle, Adım 2'yi göster
+                $("#step1Container").addClass("hidden").removeClass("grid");
+                $("#step2Container").removeClass("hidden").addClass("grid");
+
+                // Üstteki göstergeyi (Stepper) güncelle
+                $("#indicatorStep1").removeClass("bg-secondary text-white").addClass("bg-green-500 text-white").html('<span class="material-symbols-outlined text-sm">check</span>');
+                $("#textStep1").removeClass("text-secondary").addClass("text-green-500");
+                $("#stepLine").removeClass("bg-gray-200").addClass("bg-green-500");
+                $("#indicatorStep2").removeClass("bg-gray-200 text-gray-500").addClass("bg-secondary text-white");
+                $("#textStep2").removeClass("text-gray-400").addClass("text-secondary");
+            });
+
+            // === ADIM 2'DEN ADIM 1'E GERİ DÖNÜŞ ===
+            $("#btnGoToStep1").click(function () {
+                $("#step2Container").addClass("hidden").removeClass("grid");
+                $("#step1Container").removeClass("hidden").addClass("grid");
+
+                // Göstergeyi geri al
+                $("#indicatorStep1").removeClass("bg-green-500").addClass("bg-secondary").html('1');
+                $("#textStep1").removeClass("text-green-500").addClass("text-secondary");
+                $("#stepLine").removeClass("bg-green-500").addClass("bg-gray-200");
+                $("#indicatorStep2").removeClass("bg-secondary text-white").addClass("bg-gray-200 text-gray-500");
+                $("#textStep2").removeClass("text-secondary").addClass("text-gray-400");
+            });
+
+            // === DOSYA SEÇİLDİĞİNDE İSİMLERİNİ GÖSTER ===
+            $("#adImages").change(function(e) {
+                let files = e.target.files;
+                let fileListHtml = "";
+                if(files.length > 0) {
+                    for(let i = 0; i < files.length; i++) {
+                        fileListHtml += "<li>" + files[i].name + "</li>";
+                    }
+                    $("#fileList").html(fileListHtml);
+                    $("#selectedFilesContainer").removeClass("hidden");
+                } else {
+                    $("#selectedFilesContainer").addClass("hidden");
+                }
+            });
+            $("#addListingForm").on("submit", function (e) {
+                e.preventDefault();
+
+                let btn = $("#btnSubmitListing");
+                let originalText = btn.html();
+                btn.html('<span class="material-symbols-outlined animate-spin">autorenew</span> Gönderiliyor...').prop("disabled", true);
+                let listingData = {
+                    title: $("#adTitle").val(),
+                    description: $("#adDescription").val(),
+                    price: parseFloat($("#adPrice").val()),
+                    squareMeter: parseInt($("#adSquareMeter").val()),
+                    roomCount: $("#adRoomCount").val(),
+                    buildingAge: parseInt($("#adBuildingAge").val()),
+                    floorNumber: parseInt($("#adFloorNumber").val()),
+                    heatingType: $("#adHeatingType").val(),
+                    isFurnished: $("#adIsFurnished").is(":checked"),
+                    tasinmazNo: $("#adTasinmazNo").val(),
+                    categoryId: parseInt($("#adCategoryId").val()),
+                    cityId: parseInt($("#adCityId").val()),
+                    districtId: parseInt($("#adDistrictId").val()),
+                    neighborhoodId: parseInt($("#adNeighborhoodId").val())
+                };
+                $.ajax({
+                    url: apiBaseUrl,
+                    type: "POST",
+                    contentType: "application/json",
+                    headers: { "Authorization": "Bearer " + token },
+                    data: JSON.stringify(listingData),
+                    success: function (response) {
+                        let files = $("#adImages")[0].files;
+                        let extraMessage = files.length > 0 ? " (Fotoğraflarınız için altyapı hazırlanıyor, yakında aktif edilecek!)" : "";
+
+                        Swal.fire({
+                            title: 'Tebrikler!',
+                            text: response.message + extraMessage,
+                            icon: 'success',
+                            confirmButtonColor: '#0b1c30'
+                        }).then(() => {
+                            window.location.href = "/Member/MyListings"; 
+                        });
+                    },
+                    error: function (xhr) {
+                        Swal.fire('Hata!', xhr.responseJSON ? xhr.responseJSON.message : 'İlan eklenirken bir sorun oluştu.', 'error');
+                        btn.html(originalText).prop("disabled", false);
+                    }
+                });
+            });
+        });
+    </script>
+}
