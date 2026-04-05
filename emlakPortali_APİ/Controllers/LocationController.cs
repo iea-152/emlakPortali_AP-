@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using emlakPortali_APİ.Models;
 using emlakPortali_APİ.Repositories;
 
-namespace Uyg.API.Controllers
+namespace emlakPortali_APİ.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]

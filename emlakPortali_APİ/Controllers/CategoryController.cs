@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using emlakPortali_APİ.Data;
 using emlakPortali_APİ.Models;
 
-namespace Uyg.API.Controllers
+namespace emlakPortali_APİ.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]

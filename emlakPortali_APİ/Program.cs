@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
-using Uyg.API.Repositories;
+using emlakPortali_APÝ.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -47,7 +47,7 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
-builder.Services.AddScoped<PropertyRepository>();
+builder.Services.AddScoped<AdvertisementRepository>();
 builder.Services.AddScoped<LocationRepository>();
 
 builder.Services.AddControllers();
