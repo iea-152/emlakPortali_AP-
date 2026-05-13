@@ -7,7 +7,10 @@
         public decimal Price { get; set; }
         public string RoomCount { get; set; }
         public string CityName { get; set; }
+        public string DistrictName { get; set; }
         public string CategoryName { get; set; }
+        public bool IsApproved { get; set; }
+        public string FirstImageUrl { get; set; }
         public DateTime CreatedDate { get; set; }
     }
 }

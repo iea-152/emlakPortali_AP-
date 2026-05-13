@@ -16,8 +16,8 @@
         theme: {
         extend: {
         colors: {
-        "primary": "#0b1c30", // Koyu Lacivert
-        "secondary": "#fe7b29", // Canlı Turuncu
+        "primary": "#0b1c30",
+        "secondary": "#fe7b29",
         "surface": "#f8fafc",
         "surface-variant": "#e0e3e5",
         "on-primary": "#ffffff"
@@ -30,8 +30,12 @@
         }
     </script>
     <style>
-        body { font-family: 'Inter', sans-serif; }
+        body {
+        font-family: 'Inter', sans-serif;
+        }
     </style>
+
+    @await RenderSectionAsync("Styles", required: false)
 </head>
 <body class="bg-surface flex flex-col min-h-screen text-primary">
 
@@ -46,9 +50,7 @@
                 
                 <nav class="hidden md:flex space-x-8">
                     <a href="/Home/Index" class="text-primary hover:text-secondary px-3 py-2 text-sm font-semibold transition-colors">Anasayfa</a>
-                    <a href="#" class="text-primary hover:text-secondary px-3 py-2 text-sm font-semibold transition-colors">Satılık</a>
-                    <a href="#" class="text-primary hover:text-secondary px-3 py-2 text-sm font-semibold transition-colors">Kiralık</a>
-                    <a href="#" class="text-primary hover:text-secondary px-3 py-2 text-sm font-semibold transition-colors">Projeler</a>
+                    <a href="/Home/Listings" class="text-primary hover:text-secondary px-3 py-2 text-sm font-semibold transition-colors">Tüm İlanlar</a>
                 </nav>
 
                 <div id="auth-buttons" class="hidden md:flex items-center space-x-4">
@@ -109,7 +111,6 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <script>
-        // Biletin (Token) İçini Okuma Fonksiyonu
         function parseJwt(token) {
         try {
         var base64Url = token.split('.')[1];
@@ -121,17 +122,13 @@
         }
 
         $(document).ready(function () {
-        // Tarayıcının kasasında token var mı diye bakıyoruz
         var token = localStorage.getItem("token");
 
         if (token) {
         var userPayload = parseJwt(token);
         var role = userPayload ? userPayload["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"] : "";
-
-        // Kilit Nokta: Rol "Admin" ise Admin Paneline, değilse Üye Paneline gidecek!
         var panelUrl = (role === "Admin") ? "/Admin/Dashboard" : "/Member/Profile";
 
-        // Menüyü oluştur
         var loggedInMenu = `
         <a href="${panelUrl}" class="text-primary hover:text-secondary font-semibold text-sm transition-colors flex items-center">
         <span class="material-symbols-outlined text-[20px] mr-1">person</span> Panelim
@@ -141,13 +138,10 @@
         </button>
         `;
                 
-        // auth-buttons divinin içini bu yeni butonlarla doldur
         $("#auth-buttons").html(loggedInMenu);
 
-        // Çıkış Yap butonuna tıklanma olayı (SweetAlert2 ile)
         $("#btnLogout").click(function (e) {
         e.preventDefault();
-                    
         Swal.fire({
         title: 'Çıkış Yapıyorsunuz',
         text: "Hesabınızdan güvenli bir şekilde çıkış yapmak istediğinize emin misiniz?",
@@ -158,12 +152,10 @@
         confirmButtonText: 'Evet, Çıkış Yap',
         cancelButtonText: 'İptal',
         background: '#ffffff',
-        color: '#0b1c30',
-        borderRadius: '1rem'
+        color: '#0b1c30'
         }).then((result) => {
         if (result.isConfirmed) {
         localStorage.removeItem("token");
-                            
         Swal.fire({
         title: 'Çıkış Yapıldı!',
         text: 'Ana sayfaya yönlendiriliyorsunuz...',

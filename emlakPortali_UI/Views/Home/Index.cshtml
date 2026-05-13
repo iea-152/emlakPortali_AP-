@@ -2,167 +2,598 @@
     ViewData["Title"] = "Anasayfa";
 }
 
-<div class="relative bg-primary text-white py-24 sm:py-32 overflow-hidden shadow-xl">
-    <div class="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80')] bg-cover bg-center opacity-20"></div>
-    
-    <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-        <h1 class="text-4xl sm:text-5xl font-extrabold tracking-tight mb-4">Hayalinizdeki Evi Bulun</h1>
-        <p class="text-lg sm:text-xl text-on-primary/80 mb-10 max-w-2xl mx-auto">Güvenilir, şeffaf ve EİDS onaylı yüzlerce ilan arasından size en uygun olanı hemen keşfedin.</p>
+@section Styles {
+<style>
+    @@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&family=DM+Sans:wght@400;500;600&display=swap');
 
-        <div class="bg-white p-4 rounded-xl shadow-2xl max-w-4xl mx-auto flex flex-col md:flex-row gap-4">
-            
-            <div class="flex-1">
-                <select id="searchCity" class="w-full h-12 border-gray-300 text-gray-700 rounded-lg focus:ring-secondary focus:border-secondary px-3 font-medium">
-                    <option value="0">Şehir Seçin</option>
-                </select>
-            </div>
+    :root {
+        --primary: #0b1c30;
+        --secondary: #fe7b29;
+        --surface: #f8fafc;
+    }
 
-            <div class="flex-1">
-                <select id="searchDistrict" disabled class="w-full h-12 border-gray-300 text-gray-700 rounded-lg focus:ring-secondary focus:border-secondary px-3 font-medium disabled:bg-gray-100">
-                    <option value="0">Önce Şehir Seçin</option>
-                </select>
-            </div>
+    .hero-section {
+        min-height: 92vh;
+        background: var(--primary);
+        position: relative;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+    }
 
-            <div class="flex-1">
-                <input type="number" id="searchMaxPrice" placeholder="Maksimum Fiyat (₺)" class="w-full h-12 border-gray-300 text-gray-700 rounded-lg focus:ring-secondary focus:border-secondary px-3 font-medium">
-            </div>
+    .hero-bg {
+        position: absolute;
+        inset: 0;
+        background: url('https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=2000&q=80') center/cover;
+        opacity: 0.18;
+        transform: scale(1.05);
+        animation: slowZoom 20s ease-in-out infinite alternate;
+    }
 
-            <button id="btnSearch" class="h-12 bg-secondary hover:bg-opacity-90 text-white px-8 rounded-lg font-bold transition-all shadow-md flex items-center justify-center">
-                <span class="material-symbols-outlined mr-2">search</span> Ara
+    @@keyframes slowZoom {
+        from { transform: scale(1.05); }
+        to   { transform: scale(1.12); }
+    }
+
+    .hero-overlay {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(135deg, rgba(11,28,48,0.97) 0%, rgba(11,28,48,0.6) 60%, rgba(254,123,41,0.15) 100%);
+    }
+
+    .hero-content { position: relative; z-index: 2; }
+
+    .hero-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: rgba(254,123,41,0.15);
+        border: 1px solid rgba(254,123,41,0.4);
+        color: #fe7b29;
+        font-size: 13px;
+        font-weight: 600;
+        padding: 6px 16px;
+        border-radius: 99px;
+        letter-spacing: 0.05em;
+        margin-bottom: 28px;
+        animation: fadeUp 0.6s ease both;
+    }
+
+    .hero-title {
+        font-family: 'Playfair Display', serif;
+        font-size: clamp(3rem, 6vw, 5.5rem);
+        font-weight: 800;
+        color: #fff;
+        line-height: 1.05;
+        margin-bottom: 24px;
+        animation: fadeUp 0.7s ease 0.1s both;
+    }
+
+    .hero-title span { color: #fe7b29; }
+
+    .hero-subtitle {
+        font-family: 'DM Sans', sans-serif;
+        font-size: 18px;
+        color: rgba(255,255,255,0.65);
+        max-width: 520px;
+        line-height: 1.7;
+        margin-bottom: 48px;
+        animation: fadeUp 0.7s ease 0.2s both;
+    }
+
+    .search-box {
+        background: #fff;
+        border-radius: 16px;
+        padding: 12px;
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        box-shadow: 0 32px 64px rgba(0,0,0,0.3);
+        animation: fadeUp 0.7s ease 0.3s both;
+        max-width: 860px;
+    }
+
+    .search-box select,
+    .search-box input {
+        flex: 1;
+        min-width: 160px;
+        height: 48px;
+        border: 1.5px solid #e5e7eb;
+        border-radius: 10px;
+        padding: 0 14px;
+        font-family: 'DM Sans', sans-serif;
+        font-size: 14px;
+        color: var(--primary);
+        background: #f9fafb;
+        outline: none;
+        transition: border-color 0.2s;
+    }
+
+    .search-box select:focus,
+    .search-box input:focus {
+        border-color: #fe7b29;
+        background: #fff;
+    }
+
+    .search-btn {
+        height: 48px;
+        padding: 0 28px;
+        background: var(--secondary);
+        color: #fff;
+        border: none;
+        border-radius: 10px;
+        font-family: 'DM Sans', sans-serif;
+        font-weight: 700;
+        font-size: 15px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition: transform 0.15s, box-shadow 0.15s;
+        white-space: nowrap;
+    }
+
+    .search-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 24px rgba(254,123,41,0.4);
+    }
+
+    .search-btn:active { transform: translateY(0); }
+
+    .hero-stats {
+        display: flex;
+        gap: 40px;
+        margin-top: 48px;
+        animation: fadeUp 0.7s ease 0.4s both;
+    }
+
+    .stat-item { color: #fff; }
+    .stat-num {
+        font-family: 'Playfair Display', serif;
+        font-size: 2rem;
+        font-weight: 700;
+        color: #fe7b29;
+        display: block;
+    }
+    .stat-label {
+        font-size: 13px;
+        color: rgba(255,255,255,0.5);
+        font-family: 'DM Sans', sans-serif;
+    }
+
+    @@keyframes fadeUp {
+        from { opacity: 0; transform: translateY(28px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* İlan Kartları */
+    .section-title {
+        font-family: 'Playfair Display', serif;
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: var(--primary);
+    }
+
+    .ilan-card {
+        background: #fff;
+        border-radius: 20px;
+        overflow: hidden;
+        border: 1px solid #f0f0f0;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        opacity: 0;
+        transform: translateY(24px);
+    }
+
+    .ilan-card.visible {
+        animation: cardReveal 0.5s ease forwards;
+    }
+
+    @@keyframes cardReveal {
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .ilan-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 24px 48px rgba(11,28,48,0.12);
+    }
+
+    .ilan-img-wrap {
+        position: relative;
+        height: 220px;
+        overflow: hidden;
+        background: #e5e7eb;
+    }
+
+    .ilan-img-wrap img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.6s ease;
+    }
+
+    .ilan-card:hover .ilan-img-wrap img {
+        transform: scale(1.08);
+    }
+
+    .ilan-badge-eids {
+        position: absolute;
+        top: 14px;
+        left: 14px;
+        background: rgba(255,255,255,0.92);
+        backdrop-filter: blur(8px);
+        color: #065f46;
+        font-size: 11px;
+        font-weight: 700;
+        padding: 4px 12px;
+        border-radius: 99px;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .ilan-badge-cat {
+        position: absolute;
+        top: 14px;
+        right: 14px;
+        background: #fe7b29;
+        color: #fff;
+        font-size: 11px;
+        font-weight: 700;
+        padding: 4px 12px;
+        border-radius: 99px;
+    }
+
+    .ilan-body { padding: 20px 22px 22px; }
+
+    .ilan-price {
+        font-family: 'Playfair Display', serif;
+        font-size: 1.6rem;
+        font-weight: 700;
+        color: var(--primary);
+        margin-bottom: 4px;
+    }
+
+    .ilan-title {
+        font-family: 'DM Sans', sans-serif;
+        font-size: 15px;
+        font-weight: 600;
+        color: #374151;
+        margin-bottom: 8px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .ilan-location {
+        font-size: 13px;
+        color: #9ca3af;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        margin-bottom: 16px;
+    }
+
+    .ilan-meta {
+        display: flex;
+        gap: 16px;
+        padding-top: 14px;
+        border-top: 1px solid #f3f4f6;
+    }
+
+    .ilan-meta-item {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 13px;
+        font-weight: 500;
+        color: #6b7280;
+        font-family: 'DM Sans', sans-serif;
+    }
+
+    /* Özellikler Bölümü */
+    .features-section {
+        background: var(--primary);
+        padding: 100px 0;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .features-section::before {
+        content: '';
+        position: absolute;
+        top: -80px;
+        left: 0;
+        right: 0;
+        height: 80px;
+        background: var(--surface);
+        clip-path: ellipse(55% 100% at 50% 0%);
+    }
+
+    .feature-card {
+        background: rgba(255,255,255,0.05);
+        border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 20px;
+        padding: 32px;
+        transition: background 0.3s, transform 0.3s;
+    }
+
+    .feature-card:hover {
+        background: rgba(254,123,41,0.1);
+        border-color: rgba(254,123,41,0.3);
+        transform: translateY(-4px);
+    }
+
+    .feature-icon {
+        width: 52px;
+        height: 52px;
+        background: rgba(254,123,41,0.15);
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 20px;
+        color: #fe7b29;
+    }
+
+    /* CTA */
+    .cta-section {
+        background: linear-gradient(135deg, #fe7b29 0%, #f55f00 100%);
+        padding: 80px 0;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .cta-section::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+</style>
+}
+
+<!-- HERO -->
+<div class="hero-section">
+    <div class="hero-bg"></div>
+    <div class="hero-overlay"></div>
+    <div class="hero-content max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full py-20">
+        <div class="hero-tag">
+            <span class="material-symbols-outlined" style="font-size:16px;">verified</span>
+            EİDS Onaylı İlanlar · Güvenli Alım Satım
+        </div>
+        <h1 class="hero-title">
+            Hayalinizdeki Evi<br><span>Bulun.</span>
+        </h1>
+        <p class="hero-subtitle">
+            Türkiye'nin en güvenilir emlak platformunda yüzlerce onaylı ilan arasından size en uygun olanı keşfedin.
+        </p>
+
+        <div class="search-box">
+            <select id="searchCity">
+                <option value="0">📍 Şehir Seçin</option>
+            </select>
+            <select id="searchDistrict" disabled>
+                <option value="0">İlçe Seçin</option>
+            </select>
+            <input type="number" id="searchMaxPrice" placeholder="Maks. Fiyat (₺)">
+            <button class="search-btn" id="btnSearch">
+                <span class="material-symbols-outlined" style="font-size:20px;">search</span> Ara
             </button>
         </div>
-    </div>
-</div>
 
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-    <div class="flex justify-between items-end mb-8">
-        <div>
-            <h2 class="text-3xl font-bold text-primary">Öne Çıkan İlanlar</h2>
-            <p class="text-gray-500 mt-2">Admin tarafından onaylanmış en güncel ilanlar.</p>
-        </div>
-        <a href="#" class="text-secondary font-semibold hover:underline hidden sm:block">Tümünü Gör &rarr;</a>
-    </div>
-
-    <div id="ilanVitrinGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-        <div class="col-span-full text-center py-12">
-            <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-secondary mb-4"></div>
-            <p class="text-gray-500 font-medium">İlanlar API'den yükleniyor...</p>
+        <div class="hero-stats">
+            <div class="stat-item">
+                <span class="stat-num">1.200+</span>
+                <span class="stat-label">Aktif İlan</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-num">450+</span>
+                <span class="stat-label">Mutlu Alıcı</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-num">%100</span>
+                <span class="stat-label">EİDS Onaylı</span>
+            </div>
         </div>
     </div>
 </div>
 
+<!-- ÖNE ÇIKAN İLANLAR -->
+<div style="background:var(--surface); padding: 96px 0;">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:48px;">
+            <div>
+                <p style="color:#fe7b29; font-size:13px; font-weight:700; letter-spacing:0.08em; margin-bottom:10px; font-family:'DM Sans',sans-serif;">ÖNE ÇIKAN İLANLAR</p>
+                <h2 class="section-title">En Güncel<br>Fırsatlar</h2>
+            </div>
+            <a href="/Home/Listings" style="color:#fe7b29; font-weight:700; font-family:'DM Sans',sans-serif; font-size:15px; display:flex; align-items:center; gap:6px; text-decoration:none;">
+                Tümünü Gör <span class="material-symbols-outlined" style="font-size:20px;">arrow_forward</span>
+            </a>
+        </div>
+
+        <div id="ilanVitrinGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div class="col-span-full" style="text-align:center; padding:64px 0;">
+                <div style="width:40px; height:40px; border:3px solid #fe7b29; border-top-color:transparent; border-radius:50%; animation:spin 0.8s linear infinite; margin:0 auto 16px;"></div>
+                <p style="color:#9ca3af; font-family:'DM Sans',sans-serif;">İlanlar yükleniyor...</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ÖZELLİKLER -->
+<div class="features-section">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" style="position:relative; z-index:1;">
+        <div style="text-align:center; margin-bottom:64px;">
+            <p style="color:#fe7b29; font-size:13px; font-weight:700; letter-spacing:0.08em; margin-bottom:10px; font-family:'DM Sans',sans-serif;">NEDEN KONUTİGO?</p>
+            <h2 style="font-family:'Playfair Display',serif; font-size:2.5rem; font-weight:700; color:#fff; line-height:1.2;">Güvenle Alın, Güvenle Satın</h2>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <span class="material-symbols-outlined" style="font-size:26px;">verified_user</span>
+                </div>
+                <h3 style="font-family:'Playfair Display',serif; font-size:1.3rem; color:#fff; margin-bottom:12px;">EİDS Doğrulama</h3>
+                <p style="font-family:'DM Sans',sans-serif; font-size:15px; color:rgba(255,255,255,0.55); line-height:1.7;">Tüm ilanlarımız Elektronik İpotek ve Değerleme Sistemi ile doğrulanmıştır.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <span class="material-symbols-outlined" style="font-size:26px;">support_agent</span>
+                </div>
+                <h3 style="font-family:'Playfair Display',serif; font-size:1.3rem; color:#fff; margin-bottom:12px;">7/24 Destek</h3>
+                <p style="font-family:'DM Sans',sans-serif; font-size:15px; color:rgba(255,255,255,0.55); line-height:1.7;">Uzman ekibimiz her adımda yanınızda. Sorularınız için bize ulaşın.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <span class="material-symbols-outlined" style="font-size:26px;">speed</span>
+                </div>
+                <h3 style="font-family:'Playfair Display',serif; font-size:1.3rem; color:#fff; margin-bottom:12px;">Hızlı İlan Yayını</h3>
+                <p style="font-family:'DM Sans',sans-serif; font-size:15px; color:rgba(255,255,255,0.55); line-height:1.7;">İlanınız dakikalar içinde yayına girer ve binlerce alıcıya ulaşır.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- CTA -->
+<div class="cta-section">
+    <div style="position:relative; z-index:1;">
+        <h2 style="font-family:'Playfair Display',serif; font-size:2.8rem; font-weight:700; color:#fff; margin-bottom:16px;">İlanınızı Hemen Yayınlayın</h2>
+        <p style="font-family:'DM Sans',sans-serif; font-size:18px; color:rgba(255,255,255,0.8); margin-bottom:36px;">Ücretsiz kayıt olun, dakikalar içinde ilanınız yayında olsun.</p>
+        <a href="/Auth/Register" style="display:inline-flex; align-items:center; gap:10px; background:#fff; color:#fe7b29; font-family:'DM Sans',sans-serif; font-weight:700; font-size:16px; padding:16px 36px; border-radius:12px; text-decoration:none; transition:transform 0.2s, box-shadow 0.2s; box-shadow:0 8px 32px rgba(0,0,0,0.15);"
+           onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 16px 40px rgba(0,0,0,0.2)'"
+           onmouseout="this.style.transform=''; this.style.boxShadow='0 8px 32px rgba(0,0,0,0.15)'">
+            <span class="material-symbols-outlined">add_home</span> Ücretsiz İlan Ver
+        </a>
+    </div>
+</div>
 @section Scripts {
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script>
         $(document).ready(function () {
-            
-            // DİKKAT: 7264 yazan yeri kendi API (Swagger) portunla değiştirmeyi unutma!
-            const apiBaseUrl = "https://localhost:7264/api";
+        const apiBaseUrl = "https://localhost:7264/api";
+        const imgBaseUrl = "https://localhost:7264"; // Resimlerin kök adresi
+        const PLACEHOLDER = "https://placehold.co/800x600/eeeeee/999999?text=Gorsel+Yok";
 
-            // --- 1. SAYFA AÇILINCA ŞEHİRLERİ GETİR ---
-            $.ajax({
-                url: apiBaseUrl + "/Location/Cities",
-                type: "GET",
-                success: function (sehirler) {
-                    $.each(sehirler, function (index, sehir) {
-                        $("#searchCity").append(`<option value="${sehir.id}">${sehir.name}</option>`);
-                    });
-                }
-            });
+        // Şehirleri yükle
+        $.ajax({
+        url: apiBaseUrl + "/Location/Cities",
+        type: "GET",
+        success: function(sehirler) {
+        $.each(sehirler, function(i, s) {
+        $("#searchCity").append(`<option value="${s.id}">${s.name}</option>`);
+        });
+        }
+        });
 
-            // --- 2. ŞEHİR SEÇİLİNCE İLÇELERİ GETİR (CASCADING DROPDOWN) ---
-            $("#searchCity").change(function () {
-                let cityId = $(this).val();
-                if (cityId == "0") {
-                    $("#searchDistrict").empty().append('<option value="0">Önce Şehir Seçin</option>').prop("disabled", true);
-                    return;
-                }
+        // Şehir seçilince ilçeler
+        $("#searchCity").change(function() {
+        let cityId = $(this).val();
+        if (cityId == "0") {
+        $("#searchDistrict").empty().append('<option value="0">İlçe Seçin</option>').prop("disabled", true);
+        return;
+        }
+        $("#searchDistrict").prop("disabled", false).empty().append('<option value="0">Yükleniyor...</option>');
+        $.ajax({
+        url: apiBaseUrl + "/Location/Districts/" + cityId,
+        type: "GET",
+        success: function(ilceler) {
+        $("#searchDistrict").empty().append('<option value="0">İlçe Seçin</option>');
+        $.each(ilceler, function(i, ilce) {
+        $("#searchDistrict").append(`<option value="${ilce.id}">${ilce.name}</option>`);
+        });
+        }
+        });
+        });
 
-                $("#searchDistrict").prop("disabled", false).empty().append('<option value="0">Yükleniyor...</option>');
-                
-                $.ajax({
-                    url: apiBaseUrl + "/Location/Districts/" + cityId,
-                    type: "GET",
-                    success: function (ilceler) {
-                        $("#searchDistrict").empty().append('<option value="0">İlçe Seçin</option>');
-                        $.each(ilceler, function (index, ilce) {
-                            $("#searchDistrict").append(`<option value="${ilce.id}">${ilce.name}</option>`);
-                        });
-                    }
-                });
-            });
+        // İlanları getir
+        function ilanlariGetir(url) {
+        $("#ilanVitrinGrid").html(`
+        <div class="col-span-full" style="text-align:center; padding:64px 0;">
+        <div style="width:40px;height:40px;border:3px solid #fe7b29;border-top-color:transparent;border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 16px;"></div>
+        <p style="color:#9ca3af;font-family:'DM Sans',sans-serif;">Yükleniyor...</p>
+        </div>`);
 
-            // --- 3. SAYFA AÇILINCA VİTRİNE "ONAYLI" İLANLARI DİZ ---
-            function ilanlariGetir(url) {
-                $("#ilanVitrinGrid").html('<div class="col-span-full text-center py-12"><div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-secondary mb-4"></div></div>');
-                
-                $.ajax({
-                    url: url,
-                    type: "GET",
-                    success: function (ilanlar) {
-                        $("#ilanVitrinGrid").empty();
-                        
-                        $.each(ilanlar, function (index, ilan) {
-                            // Fiyatı TL formatına çevirme (Örn: 4.500.000 ₺)
-                            let formatliFiyat = new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY', maximumFractionDigits: 0 }).format(ilan.price);
-                            
-                            // İlan Kartı Tasarımı (Tailwind)
-                            let kartHtml = `
-                                <div class="bg-white rounded-2xl shadow-sm hover:shadow-xl transition-shadow border border-gray-100 overflow-hidden group cursor-pointer">
-                                    <div class="relative h-60 overflow-hidden bg-gray-200">
-                                        <img src="https://images.unsplash.com/photo-1512917774080-9991f1c4c750?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Ev" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
-                                        
-                                        <div class="absolute top-4 left-4 bg-white/90 backdrop-blur text-primary text-xs font-bold px-3 py-1 rounded-full flex items-center shadow-sm">
-                                            <span class="material-symbols-outlined text-green-500 text-sm mr-1">verified</span> EİDS Onaylı
-                                        </div>
-                                        <div class="absolute top-4 right-4 bg-secondary text-white text-xs font-bold px-3 py-1 rounded-full shadow-sm">
-                                            ${ilan.categoryName}
-                                        </div>
-                                    </div>
-                                    <div class="p-6">
-                                        <h3 class="text-2xl font-extrabold text-primary mb-2">${formatliFiyat}</h3>
-                                        <p class="text-lg font-bold text-gray-800 mb-1 truncate" title="${ilan.title}">${ilan.title}</p>
-                                        <p class="text-gray-500 text-sm mb-4 flex items-center">
-                                            <span class="material-symbols-outlined text-gray-400 text-sm mr-1">location_on</span>
-                                            ${ilan.cityName}
-                                        </p>
-                                        <div class="flex items-center gap-4 border-t border-gray-100 pt-4">
-                                            <div class="flex items-center text-sm font-medium text-gray-600">
-                                                <span class="material-symbols-outlined text-gray-400 text-[18px] mr-1.5">king_bed</span> ${ilan.roomCount}
-                                            </div>
-                                            <div class="flex items-center text-sm font-medium text-gray-600">
-                                                <span class="material-symbols-outlined text-gray-400 text-[18px] mr-1.5">calendar_month</span> ${new Date(ilan.createdDate).toLocaleDateString('tr-TR')}
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            `;
-                            $("#ilanVitrinGrid").append(kartHtml);
-                        });
-                    },
-                    error: function () {
-                        $("#ilanVitrinGrid").html('<div class="col-span-full text-center text-red-500 py-12">İlanlar bulunamadı veya API hatası.</div>');
-                    }
-                });
-            }
+        $.ajax({
+        url: url,
+        type: "GET",
+        success: function(ilanlar) {
+        $("#ilanVitrinGrid").empty();
 
-            // Sayfa ilk açıldığında doğrudan "ApprovedList" metodunu çağır (Filtresiz)
-            ilanlariGetir(apiBaseUrl + "/Advertisement/ApprovedList");
+        if (!ilanlar || ilanlar.length === 0) {
+        // Tırnak sorunu çözüldü (Backtick kullanıldı)
+        $("#ilanVitrinGrid").html(`<div class="col-span-full" style="text-align:center;padding:48px 0;color:#9ca3af;font-family:'DM Sans',sans-serif;">Sonuç bulunamadı.</div>`);
+        return;
+        }
 
-            // --- 4. ARA BUTONUNA BASILINCA (FİLTRELEME) ---
-            $("#btnSearch").click(function () {
-                let cityId = $("#searchCity").val();
-                let maxPrice = $("#searchMaxPrice").val();
-                
-                // Filtreleme URL'sini oluşturuyoruz
-                let filterUrl = apiBaseUrl + "/Advertisement/Filter?";
-                
-                if (cityId != "0") filterUrl += "CityId=" + cityId + "&";
-                if (maxPrice != "") filterUrl += "MaxPrice=" + maxPrice + "&";
-                
-                // Seçilen filtrelere göre ilanları tekrar getir
-                ilanlariGetir(filterUrl);
-            });
+        $.each(ilanlar, function(i, ilan) {
+        let fiyat = new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY', maximumFractionDigits: 0 }).format(ilan.price);
+        let tarih = new Date(ilan.createdDate).toLocaleDateString('tr-TR');
 
+        // KAPAK FOTOSU MANTIĞI
+        let imageUrls = ilan.imageUrls || ilan.ImageUrls || [];
+        let coverImg = (imageUrls && imageUrls.length > 0) ? (imgBaseUrl + imageUrls[0]) : PLACEHOLDER;
+
+        let kart = `
+        <div class="ilan-card cursor-pointer" style="animation-delay:${i * 0.08}s" onclick="window.location.href='/Listing/Detail/${ilan.id}'">
+        <div class="ilan-img-wrap">
+        <img src="${coverImg}" alt="${ilan.title}" loading="lazy" onerror="this.src='${PLACEHOLDER}'" style="width: 100%; height: 100%; object-fit: cover;">
+        <div class="ilan-badge-eids">
+        <span class="material-symbols-outlined" style="font-size:14px;color:#10b981;">verified</span> EİDS Onaylı
+        </div>
+        <div class="ilan-badge-cat">${ilan.categoryName}</div>
+        </div>
+        <div class="ilan-body">
+        <div class="ilan-price">${fiyat}</div>
+        <div class="ilan-title" title="${ilan.title}">${ilan.title}</div>
+        <div class="ilan-location">
+        <span class="material-symbols-outlined" style="font-size:16px;">location_on</span>
+        ${ilan.cityName}
+        </div>
+        <div class="ilan-meta">
+        <div class="ilan-meta-item">
+        <span class="material-symbols-outlined" style="font-size:16px;color:#fe7b29;">king_bed</span>
+        ${ilan.roomCount}
+        </div>
+        <div class="ilan-meta-item">
+        <span class="material-symbols-outlined" style="font-size:16px;color:#fe7b29;">calendar_month</span>
+        ${tarih}
+        </div>
+        </div>
+        </div>
+        </div>`;
+        $("#ilanVitrinGrid").append(kart);
+        });
+
+        // Scroll animasyonu
+        const observer = new IntersectionObserver((entries) => {
+        entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+        }, { threshold: 0.1 });
+        document.querySelectorAll('.ilan-card').forEach(c => observer.observe(c));
+        },
+        error: function() {
+        // Tırnak sorunu çözüldü (Backtick kullanıldı)
+        $("#ilanVitrinGrid").html(`<div class="col-span-full" style="text-align:center;padding:48px;color:#ef4444;font-family:'DM Sans',sans-serif;">İlanlar yüklenemedi.</div>`);
+        }
+        });
+        }
+
+        // Arama butonu
+        $("#btnSearch").click(function() {
+        let cityId = $("#searchCity").val();
+        let maxPrice = $("#searchMaxPrice").val();
+        let url = apiBaseUrl + "/Advertisement/Filter?";
+        if (cityId != "0") url += "CityId=" + cityId + "&";
+        if (maxPrice) url += "MaxPrice=" + maxPrice + "&";
+        ilanlariGetir(url);
+        });
+
+        // Sayfa açılışında
+        ilanlariGetir(apiBaseUrl + "/Advertisement/ApprovedList");
+
+        // Spin keyframe
+        const style = document.createElement('style');
+        style.textContent = '@@keyframes spin { to { transform: rotate(360deg); } }';
+        document.head.appendChild(style);
         });
     </script>
 }

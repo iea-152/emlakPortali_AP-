@@ -23,6 +23,8 @@ namespace emlakPortali_APİ.Controllers
         public async Task<IActionResult> GetAll()
         {
             var values = await _repository.GetAllAsync();
+            return Ok(values);
+        }
 
             var dtoList = values.Select(a => new AdvertisementListDto
             {
@@ -79,7 +81,7 @@ namespace emlakPortali_APİ.Controllers
                 return Unauthorized(new { Message = "Güvenlik hatası: Geçersiz token veya ID bulunamadı!" });
 
             var newAd = new Advertisement
-            {
+        {
                 Title = dto.Title,
                 Description = dto.Description,
                 Price = dto.Price,
@@ -104,6 +106,7 @@ namespace emlakPortali_APİ.Controllers
             await _repository.AddAsync(newAd);
             return Ok(new { Message = "İlan başarıyla eklendi ve onaya gönderildi!" });
         }
+
         [Authorize]
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)

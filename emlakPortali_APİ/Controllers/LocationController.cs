@@ -14,8 +14,6 @@ namespace emlakPortali_APİ.Controllers
         {
             _context = context;
         }
-
-        // 1. Tüm Şehirleri Getir
         [HttpGet("Cities")]
         public async Task<IActionResult> GetCities()
         {

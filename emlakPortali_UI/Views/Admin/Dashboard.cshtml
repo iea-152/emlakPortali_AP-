@@ -151,6 +151,48 @@
                     $("#statTotalListings").text("0");
                 }
             });
+                    window.approveAdvertisement = function (id) {
+            const apiBaseUrl = "https://localhost:7264/api/Advertisement";
+            const token = localStorage.getItem("token");
+
+            if (!token) {
+                window.location.href = "/Auth/Login";
+                return;
+            }
+
+            Swal.fire({
+                title: 'Emin misiniz?',
+                text: "Bu ilanı yayına almak istediğinize emin misiniz?",
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#10b981',
+                cancelButtonColor: '#6b7280',
+                confirmButtonText: 'Evet, Onayla!',
+                cancelButtonText: 'İptal'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        url: apiBaseUrl + "/Approve/" + id,
+                        type: "PUT",
+                        headers: { "Authorization": "Bearer " + token },
+                        success: function () {
+                            Swal.fire({
+                                title: 'Onaylandı!',
+                                text: 'İlan başarıyla yayına alındı.',
+                                icon: 'success',
+                                confirmButtonColor: '#0b1c30'
+                            });
+                    
+                            if (typeof loadPendingAds === "function") loadPendingAds();
+                            if (typeof loadApprovedAds === "function") loadApprovedAds();
+                        },
+                        error: function (xhr) {
+                            Swal.fire('Hata!', 'İlan onaylanırken bir sorun oluştu.', 'error');
+                        }
+                    });
+                }
+            });
+        };
 
         });
     </script>

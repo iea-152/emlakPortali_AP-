@@ -1,0 +1,259 @@
+﻿@{
+    ViewData["Title"] = "İlanlarım";
+}
+
+<style>
+    .material-symbols-outlined {
+        font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+    .listing-card { transition: box-shadow 0.2s ease; }
+    .listing-card:hover { box-shadow: 0px 4px 20px rgba(18, 38, 71, 0.1); }
+    #toast { transition: transform 0.3s ease, opacity 0.3s ease; transform: translateY(-100%); opacity: 0; }
+    #toast.show { transform: translateY(0); opacity: 1; }
+    #deleteModal { transition: opacity 0.2s ease; }
+    #modalCard { transition: transform 0.2s ease; }
+</style>
+
+<div id="toast" class="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 py-4 shadow-md bg-green-600 text-white pointer-events-none">
+    <div class="flex items-center gap-3">
+        <span class="material-symbols-outlined" id="toastIcon">check_circle</span>
+        <span id="toastMessage" class="font-semibold text-sm"></span>
+    </div>
+    <button onclick="hideToast()" class="ml-4 opacity-70 hover:opacity-100 pointer-events-auto">
+        <span class="material-symbols-outlined text-[20px]">close</span>
+    </button>
+</div>
+
+<div id="deleteModal" class="fixed inset-0 z-40 flex items-center justify-center" style="display:none !important; background:rgba(0,17,45,0.5);">
+    <div id="modalCard" class="bg-white rounded-2xl shadow-2xl w-full max-w-sm mx-4 overflow-hidden">
+        <div class="p-6">
+            <div class="flex items-center gap-4 mb-4">
+                <div class="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center shrink-0">
+                    <span class="material-symbols-outlined text-red-600 text-[24px]">delete_forever</span>
+                </div>
+                <div>
+                    <h3 class="text-base font-bold text-primary">İlanı Sil</h3>
+                    <p class="text-sm text-on-surface-variant mt-0.5">Bu işlem geri alınamaz.</p>
+                </div>
+            </div>
+            <p class="text-sm text-on-surface-variant bg-surface-container-low rounded-xl px-4 py-3 border border-outline-variant/30">
+                <span class="font-semibold text-primary" id="modalListingTitle"></span> ilanını kalıcı olarak silmek istediğinize emin misiniz?
+            </p>
+        </div>
+        <div class="px-6 pb-6 flex gap-3">
+            <button onclick="closeModal()"
+                    class="flex-1 py-3 rounded-xl border border-outline-variant text-on-surface font-semibold text-sm hover:bg-surface-container-low transition-colors">
+                İptal
+            </button>
+            <button onclick="executeDelete()"
+                    class="flex-1 py-3 rounded-xl bg-red-600 text-white font-semibold text-sm hover:bg-red-700 transition-colors flex items-center justify-center gap-2">
+                <span class="material-symbols-outlined text-[18px]">delete</span> Evet, Sil
+            </button>
+        </div>
+    </div>
+</div>
+
+<div class="bg-background min-h-screen">
+    <div class="max-w-7xl mx-auto px-8 py-10 pt-16">
+
+        <div class="flex items-end justify-between mb-8">
+            <div>
+                <h2 class="text-3xl font-bold text-primary">İlanlarım</h2>
+                <p class="text-on-surface-variant text-sm mt-1">Aktif ve bekleyen ilanlarınızı buradan yönetebilirsiniz.</p>
+            </div>
+            <a href="/Member/AddListing"
+               class="flex items-center gap-2 bg-secondary-container text-white px-5 py-3 rounded-xl text-sm font-semibold hover:brightness-110 transition-all shadow-sm">
+                <span class="material-symbols-outlined text-[20px]">add</span>
+                Yeni İlan Ekle
+            </a>
+        </div>
+
+        <div class="grid grid-cols-3 gap-6 mb-8" id="statRow" style="display:none;">
+            <div class="bg-white rounded-xl p-6 border border-outline-variant/30 shadow-sm">
+                <p class="text-sm text-on-surface-variant font-medium mb-1">Toplam İlan</p>
+                <p class="text-3xl font-bold text-primary" id="statTotal">0</p>
+            </div>
+            <div class="bg-white rounded-xl p-6 border border-outline-variant/30 shadow-sm">
+                <p class="text-sm text-on-surface-variant font-medium mb-1">Yayında</p>
+                <p class="text-3xl font-bold text-green-700" id="statApproved">0</p>
+            </div>
+            <div class="bg-white rounded-xl p-6 border border-outline-variant/30 shadow-sm">
+                <p class="text-sm text-on-surface-variant font-medium mb-1">Onay Bekliyor</p>
+                <p class="text-3xl font-bold text-amber-700" id="statPending">0</p>
+            </div>
+        </div>
+
+        <div id="listingsContainer">
+            <div class="flex flex-col items-center justify-center py-20 text-on-surface-variant">
+                <span class="material-symbols-outlined text-5xl mb-3">autorenew</span>
+                <p class="text-sm">Yükleniyor...</p>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    const API = "https://localhost:7264/api/Advertisement";
+    const token = localStorage.getItem("token");
+    let pendingDeleteId = null;
+
+    // Toast
+    function showToast(message, type = "success") {
+        const toast = document.getElementById("toast");
+        const colors = {
+            success: "bg-green-600",
+            error: "bg-red-600",
+            warning: "bg-amber-500"
+        };
+        const icons = { success: "check_circle", error: "error", warning: "warning" };
+
+        toast.className = `fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 py-4 shadow-md text-white pointer-events-none ${colors[type]}`;
+        document.getElementById("toastIcon").textContent = icons[type];
+        document.getElementById("toastMessage").textContent = message;
+        toast.classList.add("show");
+        setTimeout(() => hideToast(), 3500);
+    }
+
+    function hideToast() {
+        document.getElementById("toast").classList.remove("show");
+    }
+
+    // Modal
+    function confirmDelete(id, title) {
+        pendingDeleteId = id;
+        document.getElementById("modalListingTitle").textContent = title;
+        const modal = document.getElementById("deleteModal");
+        modal.style.removeProperty("display");
+        requestAnimationFrame(() => {
+            modal.style.opacity = "1";
+            document.getElementById("modalCard").style.transform = "scale(1)";
+        });
+    }
+
+    function closeModal() {
+        const modal = document.getElementById("deleteModal");
+        modal.style.opacity = "0";
+        setTimeout(() => { modal.style.display = "none !important"; }, 200);
+        pendingDeleteId = null;
+    }
+
+    function executeDelete() {
+        if (!pendingDeleteId) return;
+        const id = pendingDeleteId;
+        closeModal();
+
+        fetch(API + "/" + id, {
+            method: "DELETE",
+            headers: { "Authorization": "Bearer " + token }
+        })
+        .then(r => {
+            if (r.ok) {
+                showToast("İlan başarıyla silindi.", "success");
+                loadListings();
+            } else {
+                showToast("Silme işlemi başarısız oldu.", "error");
+            }
+        })
+        .catch(() => showToast("Bir hata oluştu.", "error"));
+    }
+
+    // Modal dışına tıklayınca kapat
+    document.getElementById("deleteModal").addEventListener("click", function(e) {
+        if (e.target === this) closeModal();
+    });
+
+    function renderListings(data) {
+        const container = document.getElementById("listingsContainer");
+        const statRow = document.getElementById("statRow");
+
+        if (!data || data.length === 0) {
+            container.innerHTML = `
+                <div class="flex flex-col items-center justify-center py-20 border-2 border-dashed border-outline-variant rounded-2xl bg-white">
+                    <span class="material-symbols-outlined text-5xl text-on-surface-variant mb-4">real_estate_agent</span>
+                    <p class="text-lg font-bold text-primary mb-1">Henüz ilanınız yok</p>
+                    <p class="text-sm text-on-surface-variant mb-6">İlk ilanınızı ekleyerek alıcılarla buluşun.</p>
+                    <a href="/Member/AddListing"
+                       class="flex items-center gap-2 bg-secondary-container text-white px-5 py-3 rounded-xl text-sm font-semibold hover:brightness-110 transition-all shadow-sm">
+                        <span class="material-symbols-outlined text-[18px]">add</span> İlan Ekle
+                    </a>
+                </div>`;
+            statRow.style.display = "none";
+            return;
+        }
+
+        const approved = data.filter(d => d.isApproved).length;
+        document.getElementById("statTotal").textContent = data.length;
+        document.getElementById("statApproved").textContent = approved;
+        document.getElementById("statPending").textContent = data.length - approved;
+        statRow.style.display = "grid";
+
+        container.innerHTML = `<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">${data.map(item => {
+            const badge = item.isApproved
+                ? `<span class="inline-flex items-center gap-1 text-[11px] font-bold px-3 py-1 rounded-full bg-green-100 text-green-800 border border-green-200">
+                       <span class="material-symbols-outlined text-[13px]">check_circle</span> Yayında
+                   </span>`
+                : `<span class="inline-flex items-center gap-1 text-[11px] font-bold px-3 py-1 rounded-full bg-amber-100 text-amber-800 border border-amber-200">
+                       <span class="material-symbols-outlined text-[13px]">schedule</span> Onay Bekliyor
+                   </span>`;
+            const date = new Date(item.createdDate).toLocaleDateString("tr-TR");
+            const price = Number(item.price).toLocaleString("tr-TR");
+            const safeTitle = item.title.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+
+            // AŞAĞIDA LİNK (<a href...>) KISMINI EKLENDİ 🚀
+            return `
+                <div class="listing-card bg-white rounded-xl border border-outline-variant/30 overflow-hidden flex flex-col shadow-sm">
+                    <div class="p-5 flex-1">
+                        <div class="flex items-start justify-between gap-3 mb-4">
+                            <a href="/Listing/Detail/${item.id}" target="_blank" class="text-base font-bold text-primary leading-tight line-clamp-2 hover:text-[#9e4300] hover:underline transition-colors cursor-pointer">
+                                ${item.title}
+                            </a>
+                            <div class="shrink-0">${badge}</div>
+                        </div>
+                        <div class="space-y-2">
+                            <p class="flex items-center gap-2 text-sm text-on-surface-variant">
+                                <span class="material-symbols-outlined text-[16px]">location_on</span>
+                                ${item.cityName}${item.districtName ? ' / ' + item.districtName : ''}
+                            </p>
+                            <p class="flex items-center gap-2 text-sm text-on-surface-variant">
+                                <span class="material-symbols-outlined text-[16px]">category</span>
+                                ${item.categoryName || '—'} · ${item.roomCount || '—'}
+                            </p>
+                            <p class="flex items-center gap-2 text-sm text-on-surface-variant">
+                                <span class="material-symbols-outlined text-[16px]">calendar_today</span>
+                                ${date}
+                            </p>
+                        </div>
+                        <p class="text-xl font-bold text-primary mt-4">${price} ₺</p>
+                    </div>
+                    <div class="px-5 py-3 bg-surface-container-low border-t border-outline-variant/20 flex justify-between items-center">
+                        <a href="/Listing/Detail/${item.id}" target="_blank" class="text-sm font-semibold text-primary hover:text-secondary-container flex items-center gap-1 transition-colors">
+                            <span class="material-symbols-outlined text-[16px]">visibility</span> Detay
+                        </a>
+                        <button onclick="confirmDelete(${item.id}, '${safeTitle}')"
+                                class="flex items-center gap-1 text-sm font-semibold text-red-600 bg-red-50 hover:bg-red-100 px-4 py-2 rounded-lg transition-colors border border-red-100">
+                            <span class="material-symbols-outlined text-[16px]">delete</span> Sil
+                        </button>
+                    </div>
+                </div>`;
+        }).join("")}</div>`;
+    }
+
+    function loadListings() {
+        if (!token) { window.location.href = "/Auth/Login"; return; }
+        fetch(API + "/MyListings", { headers: { "Authorization": "Bearer " + token } })
+            .then(r => {
+                if (r.status === 401) { localStorage.removeItem("token"); window.location.href = "/Auth/Login"; return null; }
+                return r.json();
+            })
+            .then(data => { if (data) renderListings(data); })
+            .catch(() => {
+                document.getElementById("listingsContainer").innerHTML =
+                    `<p class="text-red-500 text-sm">İlanlar yüklenirken bir hata oluştu.</p>`;
+            });
+    }
+
+    loadListings();
+</script>
+}

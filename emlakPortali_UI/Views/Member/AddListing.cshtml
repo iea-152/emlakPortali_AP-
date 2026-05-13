@@ -86,9 +86,11 @@
             </div>
             <div class="md:col-span-3 flex flex-col gap-2">
                 <label class="text-sm font-bold text-gray-700 ml-1">Mahalle <span class="text-red-500">*</span></label>
-                <select id="adNeighborhoodId" class="w-full rounded-xl border-gray-200 bg-gray-50 px-4 py-3 outline-none cursor-pointer" required disabled>
-                    <option value="">Önce İlçe Seçin</option>
-                </select>
+                <input id="adNeighborhoodName"
+                       class="w-full rounded-xl border-gray-200 bg-gray-50 px-4 py-3 outline-none focus:border-secondary"
+                       type="text"
+                       placeholder="Örn: Moda Mahallesi"
+                       required />
             </div>
 
             <div class="md:col-span-12 flex flex-col gap-2 mt-2">
@@ -135,13 +137,16 @@
 
 @section Scripts {
     <script>
-        $(document).ready(function () {
+                $(document).ready(function () {
             const apiBaseUrl = "https://localhost:7264/api/Advertisement";
-            const token = localStorage.getItem("token");
-            // --- DİNAMİK AÇILIR MENÜ KODLARI BAŞLANGICI ---
             const lookupsApiUrl = "https://localhost:7264/api/Lookups";
+            const token = localStorage.getItem("token");
 
-            // 1. Sayfa yüklenince Kategorileri ve İlleri getir
+            if (!token) {
+                window.location.href = "/Auth/Login";
+                return;
+            }
+
             $.get(`${lookupsApiUrl}/Categories`, function (data) {
                 data.forEach(item => {
                     $("#adCategoryId").append(`<option value="${item.id}">${item.name}</option>`);
@@ -154,62 +159,28 @@
                 });
             });
 
-            // 2. İl seçilince İlçeleri getir
             $("#adCityId").change(function () {
                 let cityId = $(this).val();
-                
-                // İlçe ve Mahalleyi sıfırla
                 $("#adDistrictId").empty().append('<option value="">İlçe Seçin</option>').prop("disabled", true);
-                $("#adNeighborhoodId").empty().append('<option value="">Önce İlçe Seçin</option>').prop("disabled", true);
 
                 if (cityId) {
                     $.get(`${lookupsApiUrl}/Districts/${cityId}`, function (data) {
                         data.forEach(item => {
                             $("#adDistrictId").append(`<option value="${item.id}">${item.name}</option>`);
                         });
-                        $("#adDistrictId").prop("disabled", false); // Kutuyu aktif et
+                        $("#adDistrictId").prop("disabled", false);
                     });
                 }
             });
 
-            // 3. İlçe seçilince Mahalleleri getir
-            $("#adDistrictId").change(function () {
-                let districtId = $(this).val();
-                
-                // Mahalleyi sıfırla
-                $("#adNeighborhoodId").empty().append('<option value="">Mahalle Seçin</option>').prop("disabled", true);
-
-                if (districtId) {
-                    $.get(`${lookupsApiUrl}/Neighborhoods/${districtId}`, function (data) {
-                        data.forEach(item => {
-                            $("#adNeighborhoodId").append(`<option value="${item.id}">${item.name}</option>`);
-                        });
-                        $("#adNeighborhoodId").prop("disabled", false); // Kutuyu aktif et
-                    });
-                }
-            });
-            // --- DİNAMİK AÇILIR MENÜ KODLARI BİTİŞİ ---
-
-            if (!token) {
-                window.location.href = "/Auth/Login";
-                return;
-            }
-
-            // === ADIM 1'DEN ADIM 2'YE GEÇİŞ KONTROLÜ ===
             $("#btnGoToStep2").click(function () {
                 let form = document.getElementById("addListingForm");
-                
-                // HTML5 required alanları doldurulmuş mu kontrol et
                 if (!form.checkValidity()) {
-                    form.reportValidity(); // Doldurulmamışsa kırmızı uyarı ver
+                    form.reportValidity();
                     return;
                 }
-
-                // Doldurulmuşsa Adım 1'i gizle, Adım 2'yi göster
                 $("#step1Container").addClass("hidden").removeClass("grid");
                 $("#step2Container").removeClass("hidden").addClass("grid");
-
-                // Üstteki göstergeyi (Stepper) güncelle
                 $("#indicatorStep1").removeClass("bg-secondary text-white").addClass("bg-green-500 text-white").html('<span class="material-symbols-outlined text-sm">check</span>');
                 $("#textStep1").removeClass("text-secondary").addClass("text-green-500");
                 $("#stepLine").removeClass("bg-gray-200").addClass("bg-green-500");
@@ -217,12 +188,9 @@
                 $("#textStep2").removeClass("text-gray-400").addClass("text-secondary");
             });
 
-            // === ADIM 2'DEN ADIM 1'E GERİ DÖNÜŞ ===
             $("#btnGoToStep1").click(function () {
                 $("#step2Container").addClass("hidden").removeClass("grid");
                 $("#step1Container").removeClass("hidden").addClass("grid");
-
-                // Göstergeyi geri al
                 $("#indicatorStep1").removeClass("bg-green-500").addClass("bg-secondary").html('1');
                 $("#textStep1").removeClass("text-green-500").addClass("text-secondary");
                 $("#stepLine").removeClass("bg-green-500").addClass("bg-gray-200");
@@ -230,12 +198,11 @@
                 $("#textStep2").removeClass("text-secondary").addClass("text-gray-400");
             });
 
-            // === DOSYA SEÇİLDİĞİNDE İSİMLERİNİ GÖSTER ===
-            $("#adImages").change(function(e) {
+            $("#adImages").change(function (e) {
                 let files = e.target.files;
                 let fileListHtml = "";
-                if(files.length > 0) {
-                    for(let i = 0; i < files.length; i++) {
+                if (files.length > 0) {
+                    for (let i = 0; i < files.length; i++) {
                         fileListHtml += "<li>" + files[i].name + "</li>";
                     }
                     $("#fileList").html(fileListHtml);
@@ -244,12 +211,14 @@
                     $("#selectedFilesContainer").addClass("hidden");
                 }
             });
+
             $("#addListingForm").on("submit", function (e) {
                 e.preventDefault();
 
                 let btn = $("#btnSubmitListing");
                 let originalText = btn.html();
                 btn.html('<span class="material-symbols-outlined animate-spin">autorenew</span> Gönderiliyor...').prop("disabled", true);
+
                 let listingData = {
                     title: $("#adTitle").val(),
                     description: $("#adDescription").val(),
@@ -264,8 +233,9 @@
                     categoryId: parseInt($("#adCategoryId").val()),
                     cityId: parseInt($("#adCityId").val()),
                     districtId: parseInt($("#adDistrictId").val()),
-                    neighborhoodId: parseInt($("#adNeighborhoodId").val())
+                    neighborhoodName: $("#adNeighborhoodName").val()
                 };
+
                 $.ajax({
                     url: apiBaseUrl,
                     type: "POST",
@@ -273,17 +243,43 @@
                     headers: { "Authorization": "Bearer " + token },
                     data: JSON.stringify(listingData),
                     success: function (response) {
+                        let adId = response.id;
                         let files = $("#adImages")[0].files;
-                        let extraMessage = files.length > 0 ? " (Fotoğraflarınız için altyapı hazırlanıyor, yakında aktif edilecek!)" : "";
 
-                        Swal.fire({
-                            title: 'Tebrikler!',
-                            text: response.message + extraMessage,
-                            icon: 'success',
-                            confirmButtonColor: '#0b1c30'
-                        }).then(() => {
-                            window.location.href = "/Member/MyListings"; 
-                        });
+                        if (files.length > 0) {
+                            let formData = new FormData();
+                            for (let i = 0; i < files.length; i++) {
+                                formData.append("files", files[i]);
+                            }
+
+                            $.ajax({
+                                url: apiBaseUrl + "/UploadImages/" + adId,
+                                type: "POST",
+                                headers: { "Authorization": "Bearer " + token },
+                                data: formData,
+                                processData: false,
+                                contentType: false,
+                                success: function () {
+                                    Swal.fire({
+                                        title: 'Başarılı!',
+                                        text: 'İlan ve fotoğraflar başarıyla yüklendi.',
+                                        icon: 'success',
+                                        confirmButtonColor: '#0b1c30'
+                                    }).then(() => {
+                                        window.location.href = "/Member/MyListings";
+                                    });
+                                }
+                            });
+                        } else {
+                            Swal.fire({
+                                title: 'Başarılı!',
+                                text: 'İlan başarıyla eklendi.',
+                                icon: 'success',
+                                confirmButtonColor: '#0b1c30'
+                            }).then(() => {
+                                window.location.href = "/Member/MyListings";
+                            });
+                        }
                     },
                     error: function (xhr) {
                         Swal.fire('Hata!', xhr.responseJSON ? xhr.responseJSON.message : 'İlan eklenirken bir sorun oluştu.', 'error');

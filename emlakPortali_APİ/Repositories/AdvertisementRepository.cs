@@ -1,4 +1,5 @@
-﻿using emlakPortali_APİ.Data;
+﻿using Microsoft.EntityFrameworkCore;
+using emlakPortali_APİ.Data;
 using emlakPortali_APİ.DTOs;
 using emlakPortali_APİ.Models;
 using Microsoft.EntityFrameworkCore;
@@ -75,7 +76,7 @@ namespace emlakPortali_APİ.Repositories
                 advertisement.IsApproved = true; // Onay verildi!
                 await _context.SaveChangesAsync();
             }
-        }
+    }
         public async Task<List<Advertisement>> GetFilteredAsync(AdvertisementFilterDto filter)
         {
             var query = _context.Advertisements

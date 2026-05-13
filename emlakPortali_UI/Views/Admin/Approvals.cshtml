@@ -53,10 +53,18 @@
     <script>
         $(document).ready(function () {
             const apiBaseUrl = "https://localhost:7264/api/Advertisement";
+            const imgBaseUrl = "https://localhost:7264"; // Gerçek resimlerin kök adresi
+            const PLACEHOLDER = "https://placehold.co/200x200/eeeeee/999999?text=Gorsel+Yok";
             const token = localStorage.getItem("token");
 
+            // Kullanıcı giriş yapmamışsa anasayfaya/login'e yönlendir
+            if (!token) {
+                window.location.href = "/Auth/Login";
+                return;
+            }
+
             // 1. Bekleyen İlanları Yükle
-            function loadPendingListings() {
+            window.loadPendingListings = function() {
                 $.ajax({
                     url: apiBaseUrl + "/Pending",
                     type: "GET",
@@ -82,19 +90,24 @@
                             let dateObj = new Date(item.createdDate);
                             let dateFormat = dateObj.toLocaleDateString('tr-TR');
 
+                            // 🚀 DİNAMİK KAPAK FOTOĞRAFI MANTIĞI
+                            let imageUrls = item.imageUrls || item.ImageUrls || [];
+                            let coverImg = (imageUrls && imageUrls.length > 0) ? (imgBaseUrl + imageUrls[0]) : PLACEHOLDER;
+
                             let row = `
                                 <tr class="hover:bg-gray-50/80 transition-colors group">
                                     <td class="px-6 py-4">
                                         <div class="flex items-center">
-                                            <div class="h-12 w-12 flex-shrink-0 rounded-lg bg-gray-200 bg-cover bg-center" style="background-image: url('https://images.unsplash.com/photo-1560518883-ce09059eeffa?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80')"></div>
+                                            <div class="h-12 w-12 flex-shrink-0 rounded-lg bg-gray-200 bg-cover bg-center" style="background-image: url('${coverImg}')"></div>
                                             <div class="ml-4">
                                                 <div class="text-sm font-bold text-primary">${item.title}</div>
                                                 <div class="text-xs text-orange-500 font-semibold bg-orange-50 inline-block px-2 py-0.5 rounded mt-1">İnceleme Bekliyor</div>
+                                                <div class="text-xs text-gray-400 mt-1">Satıcı: ${item.sellerName}</div>
                                             </div>
                                         </div>
                                     </td>
                                     <td class="px-6 py-4">
-                                        <div class="text-sm text-gray-900 font-medium">${item.categoryName}</div>
+                                        <div class="text-sm text-gray-900 font-medium">${item.categoryName || "Kategori Belirtilmemiş"}</div>
                                         <div class="text-xs text-gray-500 flex items-center mt-1"><span class="material-symbols-outlined text-[14px] mr-1">location_on</span>${item.cityName}</div>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
@@ -121,28 +134,30 @@
                     error: function(xhr) {
                         if(xhr.status === 401) {
                             alert("Oturumunuz süresi dolmuş. Lütfen tekrar giriş yapın.");
+                            localStorage.removeItem("token");
                             window.location.href = "/Auth/Login";
+                        } else {
+                             $("#pendingTableBody").html(`<tr><td colspan="5" class="text-center text-red-500 py-4">İlanlar yüklenirken hata oluştu.</td></tr>`);
                         }
                     }
                 });
             }
 
-            // Sayfa açıldığında verileri yükle
+            // Sayfa açıldığında ilanları yükle
             loadPendingListings();
         });
 
-        // 2. Onaylama Fonksiyonu (Global)
+        // 2. İlan Onaylama Fonksiyonu
         window.approveListing = function(id) {
             Swal.fire({
                 title: 'Onaylıyor Musunuz?',
                 text: "Bu ilan tüm kullanıcılara açık vitrine eklenecektir.",
                 icon: 'warning',
                 showCancelButton: true,
-                confirmButtonColor: '#22c55e', // Yeşil
+                confirmButtonColor: '#22c55e',
                 cancelButtonColor: '#0b1c30',
                 confirmButtonText: 'Evet, Onayla',
-                cancelButtonText: 'İptal',
-                borderRadius: '15px'
+                cancelButtonText: 'İptal'
             }).then((result) => {
                 if (result.isConfirmed) {
                     $.ajax({
@@ -150,35 +165,55 @@
                         type: "PUT",
                         headers: { "Authorization": "Bearer " + localStorage.getItem("token") },
                         success: function () {
-                            Swal.fire({ title: 'Onaylandı!', text: 'İlan başarıyla vitrine çıkarıldı.', icon: 'success', timer: 1500, showConfirmButton: false });
-                            setTimeout(() => { location.reload(); }, 1500); // Listeyi güncellemek için sayfayı yenile
+                            Swal.fire({
+                                title: 'Onaylandı!',
+                                text: 'İlan başarıyla vitrine çıkarıldı.',
+                                icon: 'success',
+                                timer: 1500,
+                                showConfirmButton: false
+                            });
+                            if (typeof loadPendingListings === "function") loadPendingListings();
+                        },
+                        error: function () {
+                            Swal.fire('Hata!', 'İlan onaylanırken bir sorun oluştu.', 'error');
                         }
                     });
                 }
             });
         };
 
-        // 3. Reddetme (Silme) Fonksiyonu (Global)
-        window.rejectListing = function(id) {
+        // 3. İlan Reddetme / Silme Fonksiyonu
+        window.rejectListing = function (id) {
+            const apiBaseUrl = "https://localhost:7264/api/Advertisement";
+            const token = localStorage.getItem("token");
+
             Swal.fire({
-                title: 'Reddet ve Sil?',
-                text: "Bu ilanı reddederek sistemden kalıcı olarak silmek istiyor musunuz?",
-                icon: 'error',
+                title: 'Emin misiniz?',
+                text: "Bu ilanı reddetmek/silmek istediğinize emin misiniz? Bu işlem geri alınamaz!",
+                icon: 'warning',
                 showCancelButton: true,
-                confirmButtonColor: '#ef4444', // Kırmızı
-                cancelButtonColor: '#0b1c30',
-                confirmButtonText: 'Evet, Sil',
-                cancelButtonText: 'İptal',
-                borderRadius: '15px'
+                confirmButtonColor: '#ef4444',
+                cancelButtonColor: '#6b7280',
+                confirmButtonText: 'Evet, Sil!',
+                cancelButtonText: 'İptal'
             }).then((result) => {
                 if (result.isConfirmed) {
                     $.ajax({
-                        url: "https://localhost:7264/api/Advertisement?id=" + id, // Hocanın yazdıgı DELETE metodu url yapısı
+                        url: apiBaseUrl + "/" + id,
                         type: "DELETE",
-                        headers: { "Authorization": "Bearer " + localStorage.getItem("token") },
+                        headers: { "Authorization": "Bearer " + token },
                         success: function () {
-                            Swal.fire({ title: 'Silindi!', text: 'İlan reddedildi ve sistemden silindi.', icon: 'success', timer: 1500, showConfirmButton: false });
-                            setTimeout(() => { location.reload(); }, 1500);
+                            Swal.fire({
+                                title: 'Silindi!',
+                                text: 'İlan başarıyla reddedildi/silindi.',
+                                icon: 'success',
+                                confirmButtonColor: '#0b1c30'
+                            });
+                            if (typeof loadPendingListings === "function") loadPendingListings();
+                        },
+                        error: function (xhr) {
+                            let errorMsg = xhr.responseJSON ? xhr.responseJSON.detail : 'İlan silinirken bir sorun oluştu (İlişkili veri olabilir).';
+                            Swal.fire('Hata', errorMsg, 'error');
                         }
                     });
                 }
